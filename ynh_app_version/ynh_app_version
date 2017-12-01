@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Get application version from manifest
 #
 # usage: ynh_app_version
