@@ -1,0 +1,13 @@
+#!/bin/bash
+
+read_json () {
+    sudo python3 -c "import sys, json;print(json.load(open('$1'))['$2'])"
+}
+
+read_manifest () {
+    if [ -f '../manifest.json' ] ; then
+        read_json '../manifest.json' "$1"
+    else
+        read_json '../settings/manifest.json' "$1"
+    fi
+}
