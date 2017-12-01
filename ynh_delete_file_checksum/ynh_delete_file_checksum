@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Delete a file checksum from the app settings
 #
 # $app should be defined when calling this helper
