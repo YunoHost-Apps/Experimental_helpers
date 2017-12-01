@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Execute a command as another user
 # usage: exec_as USER COMMAND [ARG ...]
 exec_as() {
