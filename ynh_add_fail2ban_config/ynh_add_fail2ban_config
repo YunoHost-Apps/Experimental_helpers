@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Create a dedicated fail2ban config (jail and filter conf files)
 #
 # usage: ynh_add_fail2ban_config log_file filter [max_retry [ports]]
