@@ -1,25 +1,39 @@
-#!/bin/bash
+ynh_check_starting () {
+	local line_to_match="$1"
+	local app_log="${2:-/var/log/$app/$app.log}"
+	local timeout=${3:-300}
 
-ynh_clean_setup () {
-	SUPPRESS_WARNING kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-	ynh_secure_remove "$tempfile"
-}
+	ynh_clean_check_starting () {
+		# Stop the execution of tail.
+		kill -s 15 $pid_tail 2>&1
+		ynh_secure_remove "$templog" 2>&1
+	}
 
-WARNING echo "Redémarrage de jenkins"
-tempfile="$(mktemp)"
-tail -f -n1 /var/log/$app/$app.log > "$tempfile" &	# Suit le démarrage dans le log
-PID_TAIL=$!	# Récupère le PID de la commande tail, qui est passée en arrière plan.
-systemctl restart $app
+	echo "Starting of $app" >&2
+	systemctl restart $app
+	local templog="$(mktemp)"
+	# Following the starting of the app in its log
+	tail -f -n1 "$app_log" > "$templog" &
+	# Get the PID of the tail command
+	local pid_tail=$!
 
-for i in `seq 1 300`
-do	# La boucle attend le démarrage de jenkins ou 5 minutes
-	if grep -q "Jenkins is fully up and running" "$tempfile"; then
-		WARNING echo "Le service $app a démarré correctement."
-		break	# Si le log annonce le démarrage de jenkins, sort de la boucle.
+	local i=0
+	for i in `seq 1 $timeout`
+	do
+		# Read the log until the sentence is found, that means the app finished to start. Or run until the timeout
+		if grep --quiet "$line_to_match" "$templog"
+		then
+			echo "The service $app has correctly started." >&2
+			break
+		fi
+		echo -n "." >&2
+		sleep 1
+	done
+	if [ $i -eq $timeout ]
+	then
+		echo "The service $app didn't fully started before the timeout." >&2
 	fi
-	WARNING echo -n "."
-	sleep 1
-done
-echo ""
-QUIET kill -s 15 $PID_TAIL	# Arrête l'exécution de tail.
-ynh_secure_remove "$tempfile"
+
+	echo ""
+	ynh_clean_check_starting
+}
