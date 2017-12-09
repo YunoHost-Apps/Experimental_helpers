@@ -1,3 +1,13 @@
+#!/bin/bash
+
+# Start or restart a service and follow its booting
+#
+# usage: ynh_check_starting "Line to match" [Log file] [Timeout]
+#
+# | arg: Line to match - The line to find in the log to attest the service have finished to boot.
+# | arg: Log file - The log file to watch
+# /var/log/$app/$app.log will be used if no other log is defined.
+# | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
 ynh_check_starting () {
 	local line_to_match="$1"
 	local app_log="${2:-/var/log/$app/$app.log}"
