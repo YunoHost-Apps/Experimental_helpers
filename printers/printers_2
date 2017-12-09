@@ -1,0 +1,45 @@
+#!/bin/bash
+
+ynh_print_log () {
+  echo "${1}"
+}
+
+# Print an info on stdout
+ynh_print_info () {
+  ynh_print_log "[INFO] ${1}"
+}
+
+# Print a warning on stderr
+ynh_print_warn () {
+  ynh_print_log "[WARN] ${1}" >&2
+}
+
+# Print a error on stderr
+ynh_print_err () {
+  ynh_print_log "[ERR] ${1}" >&2
+}
+
+# Execute a command and print the result as an error
+ynh_exec_err () {
+	ynh_print_err "$(eval $@)"
+}
+
+# Execute a command and print the result as a warning
+ynh_exec_warn () {
+	ynh_print_warn "$($@)"
+}
+
+# Execute a command and force the result to be printed on stdout
+ynh_exec_warn_less () {
+	$@ 2>&1
+}
+
+# Execute a command and redirect stdout in /dev/null
+ynh_exec_quiet () {
+	$@ > /dev/null
+}
+
+# Execute a command and redirect stdout and stderr in /dev/null
+ynh_exec_fully_quiet () {
+	$@ > /dev/null 2>&1
+}
