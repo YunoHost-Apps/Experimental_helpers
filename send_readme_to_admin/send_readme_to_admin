@@ -1,0 +1,29 @@
+#!/bin/bash
+
+send_readme_to_admin() {
+	app_message=$1
+
+	if [[ -z $app_message ]]; then
+		ynh_die "Package shoud send basic info to the administrator"
+	fi
+
+	# list host, kernel, packages and system information
+	ynh_info=$(yunohost tools diagnosis | grep -B 100 "services:" | sed 's/services://')
+
+	mail_subject="☁️🆈🅽🅷☁️: \`$app\` was just installed!"
+	mail_message="
+This is an automated message from your beloved YunoHost server.
+
+-----
+Specific information for this application ($app)
+-----
+$app_message
+
+-----
+Automatic diagnosis data from YunoHost
+-----
+$ynh_info
+	"
+
+	echo "$mail_message" | mail -s "$mail_subject" root -u root
+}
