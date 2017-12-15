@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Read the value of a key in a ynh manifest file
+#
+# usage: ynh_read_manifest manifest key
+# | arg: manifest - Path of the manifest to read
+# | arg: key - Name of the key to find
+ynh_read_manifest () {
+	manifest="$1"
+	key="$2"
+	python3 -c "import sys, json;print(json.load(open('$manifest'))['$key'])"
+}
