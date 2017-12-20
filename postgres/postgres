@@ -77,7 +77,7 @@ ynh_psql_create_db() {
 
 # Drop a database
 #
-# usage: ynh_psql_drop_db db
+# usage: ynh_psql_drop_db db user
 # | arg: db - the database name to drop
 # | arg: user - the user to drop
 ynh_psql_remove_db() {
