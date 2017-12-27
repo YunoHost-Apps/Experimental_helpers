@@ -28,7 +28,7 @@ enabled = true
 port = $ports
 filter = $app
 logpath = $logpath
-maxretry = $max_retry" 
+maxretry = $max_retry
 EOF
 
   sudo tee $finalfail2banfilterconf <<EOF
@@ -36,7 +36,7 @@ EOF
 before = common.conf
 [Definition]
 failregex = $failregex
-ignoreregrex =" 
+ignoreregrex =
 EOF
 
 	ynh_store_file_checksum "$finalfail2banjailconf"
@@ -45,7 +45,7 @@ EOF
 	sudo systemctl restart fail2ban
 	if local fail2ban_error="$(tail -n50 /var/log/fail2ban.log | grep "WARNING Command.*$app.*addfailregex")"
 	then
-		echo "[ERR] Fail2ban fail to load the jail for $app" >&2
+		echo "[ERR] Fail2ban failed to load the jail for $app" >&2
 		echo "WARNING${fail2ban_error#*WARNING}" >&2
 	fi
 }
