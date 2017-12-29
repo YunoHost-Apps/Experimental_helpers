@@ -42,9 +42,10 @@ EOF
   ynh_store_file_checksum "$finalfail2banjailconf"
   ynh_store_file_checksum "$finalfail2banfilterconf"
   
-..sudo systemctl restart fail2ban
-..if local fail2ban_error="$(journalctl -u fail2ban | tail -n50 | grep "WARNING Command.*$app.*addfailregex")"
-..then
+  systemctl restart fail2ban
+  local fail2ban_error="$(journalctl -u fail2ban | tail -n50 | grep "WARNING.*$app.*")"
+  if [ -n "$fail2ban_error" ]
+  then
     echo "[ERR] Fail2ban failed to load the jail for $app" >&2
     echo "WARNING${fail2ban_error#*WARNING}" >&2
   fi
