@@ -36,7 +36,7 @@ EOF
 before = common.conf
 [Definition]
 failregex = $failregex
-ignoreregrex =
+ignoreregex =
 EOF
 
   ynh_store_file_checksum "$finalfail2banjailconf"
