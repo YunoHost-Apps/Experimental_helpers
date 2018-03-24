@@ -1,1 +1,34 @@
 #!/bin/bash
+
+ynh_lsb_find() {
+  DEBIAN_VERSION="$(lsb_release -cs)"
+}
+ 
+ynh_add_repos(){
+  NAME_REPOS=$1
+  URL_REPOS=$2
+  touch "/etc/apt/source.list.d/$NAME_REPOS.list"
+  echo "# $NAME_REPOS
+    ${URL_REPOS}" \
+    > '/etc/apt/sources.list.d/$NAME_REPOS.list'
+}
+
+ynh_add_repos_backport() {
+  touch "/etc/apt/sources.list.d/backport.list"
+  BASE_URL="http://ftp.debian.org/debian"
+  if ! wget --quiet --spider "${BASE_URL}/dists/${DEBIAN_VERSION}-backports"; then
+   BASE_URL="http://backports.debian.org/debian-backports"
+  fi
+  echo "# Debian Backports
+    deb ${BASE_URL} ${DEBIAN_VERSION}-backports main" \
+    > '/etc/apt/sources.list.d/debian-backports.list'
+}
+
+ynh_add_pin_repo() {
+  
+}
+
+ynh_add_secure_backport() {
+   ynh_lsb_find
+   ynh_add_repos_backport
+}
