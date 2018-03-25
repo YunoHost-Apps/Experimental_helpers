@@ -1,17 +1,17 @@
 #!/bin/bash
  
 ynh_add_repos(){
-  name_repos=$1
-  url_repos=$2
+  name_repos="$1"
+  url_repos="$2"
   echo "# $name_repos
     ${url_repos}" 
     > "/etc/apt/sources.list.d/$name_repos.list"
 }
 
 ynh_add_pin_repo() {
-  name_repos=$1
-  pin=$2
-  origin=$3
+  name_repos="$1"
+  pin="$2"
+  origin="$3"
   echo "Package: *
        Pin: release o=$origin,a=$name_repos
        Pin-Priority: $pin" \
@@ -19,11 +19,11 @@ ynh_add_pin_repo() {
 }
 
 ynh_add_secure_backport() {
-   name_repos=debian-backports
-   origin=Debian
-   lsb_version=$(ynh_get_debian_release)
+   name_repos="debian-backports"
+   origin="Debian"
+   lsb_version="$(ynh_get_debian_release)"
    url="deb https://ftp.debian.org/debian $lsb_version-backports main"
-   pin=450
+   pin="450"
    ynh_add_repos $name_repos $url 
    ynh_add_pin_repo $name_repos $origin $pin
 }
