@@ -5,7 +5,7 @@ ynh_add_repos(){
   URL_REPOS=$2
   echo "# $NAME_REPOS
     ${URL_REPOS}" 
-    > '/etc/apt/sources.list.d/$NAME_REPOS.list'
+    > "/etc/apt/sources.list.d/$NAME_REPOS.list"
 }
 
 ynh_add_pin_repo() {
@@ -15,7 +15,7 @@ ynh_add_pin_repo() {
   echo "Package: *
        Pin: release o=$ORIGIN,a=$NAME_REPOS
        Pin-Priority: $PIN" \
-    > '/etc/apt/preferences.d/$NAME_REPOS'
+    > "/etc/apt/preferences.d/$NAME_REPOS"
 }
 
 ynh_add_secure_backport() {
