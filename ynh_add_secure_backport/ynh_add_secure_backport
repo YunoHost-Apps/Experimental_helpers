@@ -16,17 +16,12 @@ ynh_add_pin_repo() {
   if [ -f /etc/apt/preferences.d/$NAME_REPOS ]
   then 
     ynh_secure_remove /etc/apt/preferences.d/$NAME_REPOS
-    echo "Package: *
-       Pin: release o=$ORIGIN,a=$NAME_REPOS
-       Pin-Priority: $PIN" \
-    > "/etc/apt/preferences.d/$NAME_REPOS"
-  else
-    touch /etc/apt/preferences.d/$NAME_REPOS
-    echo "Package: *
-       Pin: release o=$ORIGIN,a=$NAME_REPOS
-       Pin-Priority: $PIN" \
-    > "/etc/apt/preferences.d/$NAME_REPOS"
   fi
+  touch /etc/apt/preferences.d/$NAME_REPOS
+  echo "Package: *
+       Pin: release o=$ORIGIN,a=$NAME_REPOS
+       Pin-Priority: $PIN" \
+    > '/etc/apt/preferences.d/$NAME_REPOS'
 }
 
 ynh_add_secure_backport() {
