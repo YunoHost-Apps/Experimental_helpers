@@ -3,9 +3,8 @@
 ynh_add_repos(){
   NAME_REPOS=$1
   URL_REPOS=$2
-  touch "/etc/apt/source.list.d/$NAME_REPOS.list"
   echo "# $NAME_REPOS
-    ${URL_REPOS}" \
+    ${URL_REPOS}" 
     > '/etc/apt/sources.list.d/$NAME_REPOS.list'
 }
 
@@ -13,11 +12,6 @@ ynh_add_pin_repo() {
   NAME_REPOS=$1
   PIN=$2
   ORIGIN=$3
-  if [ -f /etc/apt/preferences.d/$NAME_REPOS ]
-  then 
-    ynh_secure_remove /etc/apt/preferences.d/$NAME_REPOS
-  fi
-  touch /etc/apt/preferences.d/$NAME_REPOS
   echo "Package: *
        Pin: release o=$ORIGIN,a=$NAME_REPOS
        Pin-Priority: $PIN" \
