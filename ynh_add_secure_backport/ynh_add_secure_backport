@@ -1,8 +1,4 @@
 #!/bin/bash
-
-ynh_lsb_find() {
-  DEBIAN_VERSION="$(lsb_release -cs)"
-}
  
 ynh_add_repos(){
   NAME_REPOS=$1
@@ -13,22 +9,31 @@ ynh_add_repos(){
     > '/etc/apt/sources.list.d/$NAME_REPOS.list'
 }
 
-ynh_add_repos_backport() {
-  touch "/etc/apt/sources.list.d/backport.list"
-  BASE_URL="http://ftp.debian.org/debian"
-  if ! wget --quiet --spider "${BASE_URL}/dists/${DEBIAN_VERSION}-backports"; then
-   BASE_URL="http://backports.debian.org/debian-backports"
-  fi
-  echo "# Debian Backports
-    deb ${BASE_URL} ${DEBIAN_VERSION}-backports main" \
-    > '/etc/apt/sources.list.d/debian-backports.list'
-}
-
 ynh_add_pin_repo() {
-  
+  NAME_REPOS=$1
+  PIN=$2
+  ORIGIN=$3
+  if [ -f /etc/apt/preferences.d/$NAME_REPOS ]
+  then 
+    ynh_secure_remove /etc/apt/preferences.d/$NAME_REPOS
+    echo "Package: *
+       Pin: release o=$ORIGIN,a=$NAME_REPOS
+       Pin-Priority: $PIN" \
+    > "/etc/apt/preferences.d/$NAME_REPOS"
+  else
+    touch /etc/apt/preferences.d/$NAME_REPOS
+    echo "Package: *
+       Pin: release o=$ORIGIN,a=$NAME_REPOS
+       Pin-Priority: $PIN" \
+    > "/etc/apt/preferences.d/$NAME_REPOS"
 }
 
 ynh_add_secure_backport() {
-   ynh_lsb_find
-   ynh_add_repos_backport
+   NAME_REPOS=debian-backports
+   ORIGIN=Debian
+   LSB_VERSION=$(ynh_get_debian_release)
+   URL="deb https://ftp.debian.org/debian LSB_VERSION-backports main"
+   PIN=450
+   ynh_add_repos $NAME_REPOS $URL 
+   ynh_add_pin_repo $NAME_REPOS $ORIGIN $PIN
 }
