@@ -28,7 +28,7 @@ ynh_add_secure_backport() {
    NAME_REPOS=debian-backports
    ORIGIN=Debian
    LSB_VERSION=$(ynh_get_debian_release)
-   URL="deb https://ftp.debian.org/debian LSB_VERSION-backports main"
+   URL="deb https://ftp.debian.org/debian $LSB_VERSION-backports main"
    PIN=450
    ynh_add_repos $NAME_REPOS $URL 
    ynh_add_pin_repo $NAME_REPOS $ORIGIN $PIN
