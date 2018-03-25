@@ -27,3 +27,9 @@ ynh_add_secure_backport() {
    ynh_add_repos $name_repos $url 
    ynh_add_pin_repo $name_repos $origin $pin
 }
+
+ynh_rm_secure_repos() {
+  name_repos=$1
+  ynh_secure_remove "/etc/apt/preferences.d/$name_repos"
+  ynh_secure_remove "/etc/apt/sources.list.d/$name_repos.list"
+}
