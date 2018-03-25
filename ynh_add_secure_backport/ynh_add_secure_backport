@@ -26,6 +26,7 @@ ynh_add_pin_repo() {
        Pin: release o=$ORIGIN,a=$NAME_REPOS
        Pin-Priority: $PIN" \
     > "/etc/apt/preferences.d/$NAME_REPOS"
+  fi
 }
 
 ynh_add_secure_backport() {
