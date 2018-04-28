@@ -1,5 +1,8 @@
 #!/bin/bash
- 
+
+# Helper to add a repos quickly and without problem. It create a repos.list in $etc/apt/sources.list.d/. It doesn't update the repos, so it must be used with the ynh_add_dependencies.
+# usage : ynh_add_repos nameoftherepos url
+# URL IS SOMETHING LIKE : "deb $mirrorurl $prefix(stable or jessie...) $otherprefix(main, non-free, or somting like that)"
 ynh_add_repos(){
   name_repos="$1"
   url_repos="$2"
@@ -8,6 +11,9 @@ ynh_add_repos(){
     > "/etc/apt/sources.list.d/$name_repos.list"
 }
 
+# Helper to pin a repos easily.
+# usage : ynh_add_pin_repo nameoftherepos nbrofthepin origin 
+# Origin is the name of the orga which set up this repos ex: Debian 
 ynh_add_pin_repo() {
   name_repos="$1"
   pin="$2"
@@ -18,6 +24,8 @@ ynh_add_pin_repo() {
     > "/etc/apt/preferences.d/$name_repos"
 }
 
+# Add in a secure way backports repo.
+# usage : ynh_add_secure_backport
 ynh_add_secure_backport() {
    name_repos="debian-backports"
    origin="Debian"
@@ -28,6 +36,7 @@ ynh_add_secure_backport() {
    ynh_add_pin_repo $name_repos $origin $pin
 }
 
+# Remove a repos easily in a secure way using the ynh_secure_remove helper
 ynh_rm_secure_repos() {
   name_repos=$1
   ynh_secure_remove "/etc/apt/preferences.d/$name_repos"
