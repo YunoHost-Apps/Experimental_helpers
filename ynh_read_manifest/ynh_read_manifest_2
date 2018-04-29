@@ -42,3 +42,18 @@ ynh_app_package_version () {
     version_key=$(ynh_read_manifest "$manifest_path" "version")
     echo "${version_key/*~ynh/}"
 }
+
+# Returns true if upstream version is up to date
+#
+# This helper should be used to avoid an upgrade of the upstream version
+# when it's not needed (but yet allowing to upgrade other parts of the
+# YunoHost application (e.g. nginx conf)
+#
+# usage: ynh_is_upstream_up_to_date (returns a boolean)
+ynh_is_upstream_up_to_date () {
+  local version=$(ynh_read_manifest "/etc/yunohost/apps/$YNH_APP_INSTANCE_NAME/manifest.json" "version" || echo 1.0)
+  version="${version/~ynh*/}"
+  local last_version=$(ynh_read_manifest "../manifest.json" "version" || echo 1.0)
+  last_version="${last_version/~ynh*/}"
+  [ "$version" = "$last_version" ]
+}
