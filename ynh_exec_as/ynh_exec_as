@@ -12,3 +12,12 @@ exec_as() {
     sudo -u "$USER" "$@"
   fi
 }
+
+# Execute a command as another user with login
+# (hence in user home dir, with prior loading of .profile, etc.)
+# usage: exec_login_as USER COMMAND [ARG ...]
+exec_login_as() {
+  local user=$1
+  shift 1
+  exec_as $user --login "$@"
+}
