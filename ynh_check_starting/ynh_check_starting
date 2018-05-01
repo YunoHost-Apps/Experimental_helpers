@@ -4,8 +4,8 @@
 #
 # usage: ynh_check_starting "Line to match" [Log file] [Timeout] [Service name]
 #
+# | arg: Log file - The log file to watch; specify "systemd" to read systemd journal for specified service
 # | arg: Line to match - The line to find in the log to attest the service have finished to boot.
-# | arg: Log file - The log file to watch
 # | arg: Service name
 # /var/log/$app/$app.log will be used if no other log is defined.
 # | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
@@ -25,15 +25,21 @@ ynh_check_starting () {
 	systemctl stop $service_name
 	local templog="$(mktemp)"
 	# Following the starting of the app in its log
-	tail -F -n0 "$app_log" > "$templog" &
-	# Get the PID of the tail command
+	if [ "$app_log" == "systemd" ] ; then
+		# Read the systemd journal
+		journalctl -u $service_name -f > "$templog" &
+	else
+		# Read the specified log file
+		tail -F -n0 "$app_log" > "$templog" &
+	fi
+	# Get the PID of the last command
 	local pid_tail=$!
 	systemctl start $service_name
 
 	local i=0
 	for i in `seq 1 $timeout`
 	do
-		# Read the log until the sentence is found, that means the app finished to start. Or run until the timeout
+		# Read the log until the sentence is found, which means the app finished starting. Or run until the timeout.
 		if grep --quiet "$line_to_match" "$templog"
 		then
 			echo "The service $service_name has correctly started." >&2
@@ -44,7 +50,7 @@ ynh_check_starting () {
 	done
 	if [ $i -eq $timeout ]
 	then
-		echo "The service $service_name didn't fully started before the timeout." >&2
+		echo "The service $service_name didn't fully start before the timeout." >&2
 	fi
 
 	echo ""
