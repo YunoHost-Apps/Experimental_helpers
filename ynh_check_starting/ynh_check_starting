@@ -15,12 +15,6 @@ ynh_check_starting () {
 	local app_log="${2:-/var/log/$service_name/$service_name.log}"
 	local timeout=${3:-300}
 
-	ynh_clean_check_starting () {
-		# Stop the execution of tail.
-		kill -s 15 $pid_tail 2>&1
-		ynh_secure_remove "$templog" 2>&1
-	}
-
 	echo "Starting of $service_name" >&2
 	systemctl stop $service_name
 	local templog="$(mktemp)"
@@ -55,4 +49,14 @@ ynh_check_starting () {
 
 	echo ""
 	ynh_clean_check_starting
+}
+# Clean temporary process and file used by ynh_check_starting
+# (usually used in ynh_clean_setup scripts)
+#
+# usage: ynh_clean_check_starting
+
+ynh_clean_check_starting () {
+	# Stop the execution of tail.
+	kill -s 15 $pid_tail 2>&1
+	ynh_secure_remove "$templog" 2>&1
 }
