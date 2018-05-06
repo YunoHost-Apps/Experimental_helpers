@@ -27,7 +27,7 @@ ynh_check_starting () {
 	# Following the starting of the app in its log
 	if [ "$app_log" == "systemd" ] ; then
 		# Read the systemd journal
-		journalctl -u $service_name -f > "$templog" &
+		journalctl -u $service_name -f --since=-45 > "$templog" &
 	else
 		# Read the specified log file
 		tail -F -n0 "$app_log" > "$templog" &
