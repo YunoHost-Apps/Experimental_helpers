@@ -1,3 +1,6 @@
+#!/bin/bash
+
+
 # Create a Database in mongodb
 # Usage : ynh_mongo_setup_db dbname dbuser
 ynh_mongo_setup_db() {
@@ -12,6 +15,13 @@ ynh_mongo_setup_db() {
   ynh_app_setting_set $app dbuser $dbuser
   ynh_app_setting_set $app dbpass $dbpass
   ynh_app_setting_set $app dbname $dbname
+  mkdir -p /var/backups/mongobackups/
+  cat > "/etc/cron.daily/mongo_backup" << EOF
+#!/bin/bash
+mongodump --db $db_name --out /var/backups/mongobackups/
+find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
+EOF
+	chmod +x "/etc/cron.daily/mongo_backup"   
 }
 
 # Remove a Database in Mongodb
@@ -19,4 +29,11 @@ ynh_mongo_setup_db() {
 ynh_mongo_remove_db() {
   db_name=$1
   mongo $db_name --eval "db.dropDatabase()"
+}
+
+ynh_mongo_dump_db() {
+  db_name=$1
+  date_today=$(date +"%m-%d-%y")
+  find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
+  mongodump --db $db_name --out /var/backups/mongobackups/$date_today
 }
