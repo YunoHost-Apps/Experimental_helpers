@@ -1,0 +1,22 @@
+# Create a Database in mongodb
+# Usage : ynh_mongo_setup_db dbname dbuser
+ynh_mongo_setup_db() {
+  db_name=$1
+  db_user=$2
+  db_pass=$(ynh_string_random)
+  # Create a user for the Database
+  mongo --shell "$db_name" --eval 'db.createUser( { user: "'${db_user}'", pwd: "'${db_pass}'", roles: [ "readWrite" ] } );' <<< exit
+  # Set the user as admin of the db
+  mongo --shell "$db_name" --eval 'db.grantRolesToUser("'${db_user}'",[{ role: "clusterMonitor", db: "admin" }]);' <<< exit
+  # Store Setting for the remove part.
+  ynh_app_setting_set $app dbuser $dbuser
+  ynh_app_setting_set $app dbpass $dbpass
+  ynh_app_setting_set $app dbname $dbname
+}
+
+# Remove a Database in Mongodb
+# Usage : ynh_mongo_remove_db dbname
+ynh_mongo_remove_db() {
+  db_name=$1
+  mongo $db_name --eval "db.dropDatabase()"
+}
