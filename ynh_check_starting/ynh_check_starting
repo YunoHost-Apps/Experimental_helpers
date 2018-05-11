@@ -6,14 +6,14 @@
 #
 # | arg: Line to match - The line to find in the log to attest the service have finished to boot.
 # | arg: Log file - The log file to watch
+# | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
 # | arg: Service name
 # /var/log/$app/$app.log will be used if no other log is defined.
-# | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
 ynh_check_starting () {
 	local line_to_match="$1"
-	local service_name="${4:-$app}"
 	local app_log="${2:-/var/log/$service_name/$service_name.log}"
 	local timeout=${3:-300}
+	local service_name="${4:-$app}"
 
 	ynh_clean_check_starting () {
 		# Stop the execution of tail.
