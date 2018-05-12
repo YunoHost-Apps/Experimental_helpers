@@ -4,11 +4,11 @@
 #
 # usage: ynh_check_starting "Line to match" [Log file] [Timeout] [Service name]
 #
-# | arg: Log file - The log file to watch; specify "systemd" to read systemd journal for specified service
 # | arg: Line to match - The line to find in the log to attest the service have finished to boot.
-# | arg: Service name
-# /var/log/$app/$app.log will be used if no other log is defined.
+# | arg: Log file - The log file to watch; specify "systemd" to read systemd journal for specified service
+#    /var/log/$app/$app.log will be used if no other log is defined.
 # | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
+# | arg: Service name
 ynh_check_starting () {
 	local line_to_match="$1"
 	local service_name="${4:-$app}"
