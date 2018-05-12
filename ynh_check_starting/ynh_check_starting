@@ -9,11 +9,12 @@
 #    /var/log/$app/$app.log will be used if no other log is defined.
 # | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
 # | arg: Service name
+
 ynh_check_starting () {
 	local line_to_match="$1"
-	local service_name="${4:-$app}"
 	local app_log="${2:-/var/log/$service_name/$service_name.log}"
 	local timeout=${3:-300}
+	local service_name="${4:-$app}"
 
 	echo "Starting of $service_name" >&2
 	systemctl stop $service_name

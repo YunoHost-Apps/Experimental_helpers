@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Argument $1 is the size of the swap in MiB
+ynh_add_swap () {
+	local swap_max_size=$(( $1 * 1024 ))
+
+	local free_space=$(df --output=avail / | sed 1d)
+	# Because we don't want to fill the disk with a swap file, divide by 2 the available space.
+	local usable_space=$(( $free_space / 2 ))
+
+	# Compare the available space with the size of the swap.
+	# And set a acceptable size from the request
+	if [ $usable_space -ge $swap_max_size ]
+	then
+		local swap_size=$swap_max_size
+	elif [ $usable_space -ge $(( $swap_max_size / 2 )) ]
+	then
+		local swap_size=$(( $swap_max_size / 2 ))
+	elif [ $usable_space -ge $(( $swap_max_size / 3 )) ]
+	then
+		local swap_size=$(( $swap_max_size / 3 ))
+	elif [ $usable_space -ge $(( $swap_max_size / 4 )) ]
+	then
+		local swap_size=$(( $swap_max_size / 4 ))
+	else
+		echo "Not enough space left for a swap file" >&2
+		local swap_size=0
+	fi
+
+	# If there's enough space for a swap, and no existing swap here
+	if [ $swap_size -ne 0 ] && [ ! -e /swap ]
+	then
+		# Preallocate space for the swap file
+		fallocate -l ${swap_size}K /swap
+		chmod 0600 /swap
+		# Create the swap
+		mkswap /swap
+		# And activate it
+		swapon /swap
+		# Then add an entry in fstab to load this swap at each boot.
+		echo -e "/swap swap swap defaults 0 0 #Swap added by $app" >> /etc/fstab
+	fi
+}
+
+ynh_del_swap () {
+	# If there a swap at this place
+	if [ -e /swap ]
+	then
+		# Clean the fstab
+		sed -i "/#Swap added by $app/d" /etc/fstab
+		# Desactive the swap file
+		swapoff /swap
+		# And remove it
+		rm /swap
+	fi
+}
