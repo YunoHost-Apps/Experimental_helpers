@@ -45,7 +45,7 @@ ynh_handle_getopts_args () {
 			# Check the last character of the value associate to the key
 			if [ "${args_array[$key]: -1}" = "=" ]
 			then
-				# For an option with additionnal values, add a ':' before the letter for getopts.
+				# For an option with additionnal values, add a ':' after the letter for getopts.
 				getopts_parameters="${getopts_parameters}${key}:"
 			else
 				getopts_parameters="${getopts_parameters}${key}"
@@ -119,6 +119,7 @@ ynh_handle_getopts_args () {
 						done
 					fi
 				fi
+
 				# Shift the parameter and its argument(s)
 				shift $shift_value
 			done
