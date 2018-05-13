@@ -46,7 +46,7 @@ ynh_handle_getopts_args () {
 			if [ "${args_array[$key]: -1}" = "=" ]
 			then
 				# For an option with additionnal values, add a ':' before the letter for getopts.
-				getopts_parameters="${getopts_parameters}:${key}"
+				getopts_parameters="${getopts_parameters}${key}:"
 			else
 				getopts_parameters="${getopts_parameters}${key}"
 			fi
@@ -73,15 +73,16 @@ ynh_handle_getopts_args () {
 				# Parse with getopts only if the argument begin by -, that means the argument is an option
 				# getopts will fill $parameter with the letter of the option it has read.
 				local parameter=""
-				getopts "$getopts_parameters" parameter || true
+				getopts ":$getopts_parameters" parameter || true
 
 				if [ "$parameter" = "?" ]
 				then
 					ynh_die "Invalid argument: -${OPTARG:-}"
 				elif [ "$parameter" = ":" ]
 				then
-					ynhdie "-$OPTARG parameter requires an argument."
+					ynh_die "-$OPTARG parameter requires an argument."
 				else
+					local shift_value=1
 					# Use the long option, corresponding to the short option read by getopts, as a variable
 					# (e.g. for [u]=user, 'user' will be used as a variable)
 					# Also, remove '=' at the end of the long option
@@ -93,16 +94,14 @@ ynh_handle_getopts_args () {
 					then
 						# 'eval ${option_var}' will use the content of 'option_var'
 						eval ${option_var}=1
-						local shift_value=1
 					else
-						local shift_value=1
 						# Read all other arguments to find multiple value for this option.
 						# Load args in a array
 						local all_args=("$@")
 						# Then read the array value per value
-						for i in `seq 2 $(( ${#all_args[@]} -1 ))`
+						for i in `seq 1 $(( ${#all_args[@]} ))`
 						do
-							if [ "${arguments[$i]:0:1}" == "-" ]
+							if [ "${all_args[$i]:0:1}" == "-" ] || [ -z "${all_args[$i]}" ]
 							then
 								# If this argument is an option, end here.
 								break
@@ -114,13 +113,12 @@ ynh_handle_getopts_args () {
 									# If there's already another value for this option, add a ; before adding the new value
 									eval ${option_var}+="\;"
 								fi
-								eval ${option_var}+="${arguments[$i]}"
+								eval ${option_var}+="${all_args[$i]}"
 								shift_value=$(( shift_value + 1 ))
 							fi
 						done
 					fi
 				fi
-
 				# Shift the parameter and its argument(s)
 				shift $shift_value
 			done
