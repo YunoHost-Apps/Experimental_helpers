@@ -28,6 +28,8 @@
 # Let's see something more significant
 # declare -Ar args_array=( [u]=user [f]=finalpath= [d]=database )
 #
+# NB: Because we're using 'declare' without -g, the array will be declared as a local variable.
+#
 # Please keep in mind that the long option will be used as a variable to store the values for this option.
 # For the previous example, that means that $finalpath will be fill with the value given as argument for this option.
 #
@@ -150,8 +152,35 @@ ynh_handle_getopts_args () {
 				shift $shift_value
 			done
 		}
-		# Call parse_arg and pass the modified list of args as an array of arguments.
-		parse_arg "${arguments[@]}"
+
+		# LEGACY MODE
+		# Check if there's getopts arguments
+		if [ "${arguments[0]:0:1}" != "-" ]
+		then
+			# If not, enter in legacy mode and manage the arguments as positionnal ones.
+			echo "! Helper used in legacy mode !"
+			for i in `seq 0 $(( ${#arguments[@]} -1 ))`
+			do
+				# Use getopts_parameters as a list of key of the array args_array
+				# Remove all ':' in getopts_parameters
+				getopts_parameters=${getopts_parameters//:}
+				# Get the key from getopts_parameters, by using the key according to the position of the argument.
+				key=${getopts_parameters:$i:1}
+				# Use the long option, corresponding to the key, as a variable
+				# (e.g. for [u]=user, 'user' will be used as a variable)
+				# Also, remove '=' at the end of the long option
+				# The variable name will be stored in 'option_var'
+				local option_var="${args_array[$key]%=}"
+
+				# Store each value given as argument in the corresponding variable
+				# The values will be stored in the same order than $args_array
+				eval "${option_var}+=\"${arguments[$i]}\""
+			done
+		else
+			# END LEGACY MODE
+			# Call parse_arg and pass the modified list of args as an array of arguments.
+			parse_arg "${arguments[@]}"
+		fi
 	fi
 	set -x
 }
