@@ -27,6 +27,7 @@
 
 ynh_handle_getopts_args () {
 	# Manage arguments only if there's some provided
+	set +x
 	if [ $# -ne 0 ]
 	then
 		# Store arguments in an array to keep each argument separated
@@ -127,4 +128,5 @@ ynh_handle_getopts_args () {
 		# Call parse_arg and pass the modified list of args as an array of arguments.
 		parse_arg "${arguments[@]}"
 	fi
+	set -x
 }
