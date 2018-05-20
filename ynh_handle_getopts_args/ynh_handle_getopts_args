@@ -58,7 +58,9 @@ ynh_handle_getopts_args () {
 			do
 				# And replace long option (value of the key) by the short option, the key itself
 				# (e.g. for [u]=user, --user will be -u)
-				# Also, remove '=' at the end of the long option
+				# Replace long option with =
+				arguments[arg]="${arguments[arg]//--${args_array[$key]}/-${key} }"
+				# And long option without =
 				arguments[arg]="${arguments[arg]//--${args_array[$key]%=}/-${key}}"
 			done
 		done
@@ -99,13 +101,26 @@ ynh_handle_getopts_args () {
 						# Read all other arguments to find multiple value for this option.
 						# Load args in a array
 						local all_args=("$@")
+
+						# If the first argument is longer than 2 characters,
+						# There's a value attached to the option, in the same array cell
+						if [ ${#all_args[0]} -gt 2 ]; then
+							# Remove the option and the space, so keep only the value itself.
+							all_args[0]="${all_args[0]#-${parameter} }"
+							# Reduce the value of shift, because the option has been removed manually
+							shift_value=$(( shift_value - 1 ))
+						fi
+
 						# Then read the array value per value
-						for i in `seq 1 $(( ${#all_args[@]} ))`
+						for i in `seq 0 $(( ${#all_args[@]} ))`
 						do
+							# If this argument is an option, end here.
 							if [ "${all_args[$i]:0:1}" == "-" ] || [ -z "${all_args[$i]}" ]
 							then
-								# If this argument is an option, end here.
-								break
+								# Ignore the first value of the array, which is the option itself
+								if [ "$i" -ne 0 ]; then
+									break
+								fi
 							else
 								# Else, add this value to this option
 								# Each value will be separated by ';'
@@ -114,7 +129,7 @@ ynh_handle_getopts_args () {
 									# If there's already another value for this option, add a ; before adding the new value
 									eval ${option_var}+="\;"
 								fi
-								eval ${option_var}+="${all_args[$i]}"
+								eval "${option_var}+=\"${all_args[$i]}\""
 								shift_value=$(( shift_value + 1 ))
 							fi
 						done
