@@ -2,7 +2,17 @@
 
 # Internal helper design to allow helpers to use getopts to manage their arguments
 #
-# example: ynh_handle_getopts_args "$@"
+# example: function my_helper()
+# {
+#     declare -Ar args_array=( [a]=arg1= [b]=arg2= [c]=arg3 )
+#     local arg1
+#     local arg2
+#     local arg3
+#     ynh_handle_getopts_args "$@"
+#
+#     [...]
+# }
+# my_helper --arg1 "val1" -b val2 -c
 #
 # usage: ynh_handle_getopts_args "$@"
 # | arg: $@    - Simply "$@" to tranfert all the positionnal arguments to the function
