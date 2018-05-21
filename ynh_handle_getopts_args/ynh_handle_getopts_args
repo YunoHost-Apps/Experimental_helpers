@@ -141,7 +141,7 @@ ynh_handle_getopts_args () {
 									# If there's already another value for this option, add a ; before adding the new value
 									eval ${option_var}+="\;"
 								fi
-								eval "${option_var}+=\"${all_args[$i]}\""
+								eval ${option_var}+=\"${all_args[$i]}\"
 								shift_value=$(( shift_value + 1 ))
 							fi
 						done
@@ -174,7 +174,7 @@ ynh_handle_getopts_args () {
 
 				# Store each value given as argument in the corresponding variable
 				# The values will be stored in the same order than $args_array
-				eval "${option_var}+=\"${arguments[$i]}\""
+				eval ${option_var}+=\"${arguments[$i]}\"
 			done
 		else
 			# END LEGACY MODE
