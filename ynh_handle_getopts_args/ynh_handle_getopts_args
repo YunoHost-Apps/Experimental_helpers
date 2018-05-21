@@ -34,9 +34,13 @@
 # For the previous example, that means that $finalpath will be fill with the value given as argument for this option.
 #
 # Also, in the previous example, finalpath has a '=' at the end. That means this option need a value.
-# So, the helper has to be call with --finalpath /final/path or -f /final/path, the variable $finalpath will get the value /final/path
+# So, the helper has to be call with --finalpath /final/path, --finalpath=/final/path or -f /final/path, the variable $finalpath will get the value /final/path
+# If there's many values for an option, -f /final /path, the value will be separated by a ';' $finalpath=/final;/path
 # For an option without value, like --user in the example, the helper can be called only with --user or -u. $user will then get the value 1.
-
+#
+# To keep a retrocompatibility, a package can still call a helper, using getopts, with positional arguments.
+# The "legacy mode" will manage the positional arguments and fill the variable in the same order than they are given in $args_array.
+# e.g. for `my_helper "val1" val2`, arg1 will be filled with val1, and arg2 with val2.
 ynh_handle_getopts_args () {
 	# Manage arguments only if there's some provided
 	set +x
