@@ -1,8 +1,16 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Argument $1 is the size of the swap in MiB
 ynh_add_swap () {
-	local swap_max_size=$(( $1 * 1024 ))
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [s]=size= )
+	local size
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	local swap_max_size=$(( $size * 1024 ))
 
 	local free_space=$(df --output=avail / | sed 1d)
 	# Because we don't want to fill the disk with a swap file, divide by 2 the available space.

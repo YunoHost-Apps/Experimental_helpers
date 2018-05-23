@@ -1,20 +1,29 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Start or restart a service and follow its booting
 #
 # usage: ynh_check_starting "Line to match" [Log file] [Timeout] [Service name]
 #
-# | arg: Line to match - The line to find in the log to attest the service have finished to boot.
-# | arg: Log file - The log file to watch; specify "systemd" to read systemd journal for specified service
+# | arg: -m, --line_to_match= - Line to match - The line to find in the log to attest the service have finished to boot.
+# | arg: -l, --app_log= - Log file - The log file to watch; specify "systemd" to read systemd journal for specified service
 #    /var/log/$app/$app.log will be used if no other log is defined.
-# | arg: Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
-# | arg: Service name
+# | arg: -t, --timeout= - Timeout - The maximum time to wait before ending the watching. Defaut 300 seconds.
+# | arg: -n, --service_name= - Service name
 
 ynh_check_starting () {
-	local line_to_match="$1"
-	local app_log="${2:-/var/log/$service_name/$service_name.log}"
-	local timeout=${3:-300}
-	local service_name="${4:-$app}"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [m]=line_to_match= [l]=app_log= [t]=timeout= [n]=service_name= )
+	local line_to_match
+	local app_log
+	local timeout
+	local service_name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+	local app_log="${app_log:-/var/log/$service_name/$service_name.log}"
+	local timeout=${timeout:-300}
+	local service_name="${service_name:-$app}"
 
 	echo "Starting of $service_name" >&2
 	systemctl stop $service_name
@@ -51,11 +60,11 @@ ynh_check_starting () {
 	echo ""
 	ynh_clean_check_starting
 }
+
 # Clean temporary process and file used by ynh_check_starting
 # (usually used in ynh_clean_setup scripts)
 #
 # usage: ynh_clean_check_starting
-
 ynh_clean_check_starting () {
 	# Stop the execution of tail.
 	kill -s 15 $pid_tail 2>&1

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 #=================================================
 #
 # POSTGRES HELPERS
@@ -51,34 +53,50 @@ ynh_psql_test_if_first_run() {
 # example: ynh_psql_connect_as 'user' 'pass' < /path/to/file.sql
 #
 # usage: ynh_psql_connect_as user pwd [db]
-# | arg: user - the user name to connect as
-# | arg: pwd - the user password
-# | arg: db - the database to connect to
+# | arg: -u, --user= - the user name to connect as
+# | arg: -p, --pwd= - the user password
+# | arg: -d, --db= - the database to connect to
 ynh_psql_connect_as() {
-	user="$1"
-	pwd="$2"
-	db="$3"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [u]=user= [p]=pwd= [d]=db=)
+	local user
+	local pwd
+	local db
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	sudo --login --user=postgres PGUSER="$user" PGPASSWORD="$pwd" psql "$db"
 }
 
 # # Execute a command as root user
 #
 # usage: ynh_psql_execute_as_root sql [db]
-# | arg: sql - the SQL command to execute
-# | arg: db - the database to connect to
+# | arg: -s, --sql= - the SQL command to execute
+# | arg: -d, --db= - the database to connect to
 ynh_psql_execute_as_root () {
-	sql="$1"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [s]=sql= [d]=db= )
+	local sql
+	local db
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	sudo --login --user=postgres psql <<< "$sql"
 }
 
 # Execute a command from a file as root user
 #
 # usage: ynh_psql_execute_file_as_root file [db]
-# | arg: file - the file containing SQL commands
-# | arg: db - the database to connect to
+# | arg: -f, --file= - the file containing SQL commands
+# | arg: -d, --db= - the database to connect to
 ynh_psql_execute_file_as_root() {
-	file="$1"
-	db="$2"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [f]=file= [d]=db= )
+	local file
+	local db
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	sudo --login --user=postgres psql "$db" < "$file"
 }
 
@@ -92,11 +110,16 @@ ynh_psql_execute_file_as_root() {
 # | arg: name - Name of the database
 # | arg: pwd - Password of the database. If not given, a password will be generated
 ynh_psql_setup_db () {
-	db_user="$1"
-	db_name="$2"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [u]=db_user= [n]=db_name= [p]=db_pwd= )
+	local db_user
+	local db_name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
 	new_db_pwd=$(ynh_string_random)	# Generate a random password
 	# If $3 is not given, use new_db_pwd instead for db_pwd.
-	db_pwd="${3:-$new_db_pwd}"
+	db_pwd="${db_pwd:-$new_db_pwd}"
+
 	ynh_psql_create_db "$db_name" "$db_user" "$db_pwd"	# Create the database
 	ynh_app_setting_set "$app" psqlpwd "$db_pwd"	# Store the password in the app's config
 }
