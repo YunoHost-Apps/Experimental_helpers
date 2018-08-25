@@ -1,10 +1,18 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Check if an URL is already handled
 # usage: is_url_handled URL
 is_url_handled() {
+  # Declare an array to define the options of this helper.
+  declare -Ar args_array=( [u]=url= )
+  local url
+  # Manage arguments with getopts
+  ynh_handle_getopts_args "$@"
+
   local output=($(curl -k -s -o /dev/null \
-      -w 'x%{redirect_url} %{http_code}' "$1"))
+      -w 'x%{redirect_url} %{http_code}' "$url"))
   # It's handled if it does not redirect to the SSO nor return 404
   [[ ! ${output[0]} =~ \/yunohost\/sso\/ && ${output[1]} != 404 ]]
 }
