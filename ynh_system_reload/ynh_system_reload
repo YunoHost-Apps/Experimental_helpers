@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# NOTE This helper is DEPRECATED
+
 # Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
 
 # Reload (or other actions) a service and print a log in case of failure.
