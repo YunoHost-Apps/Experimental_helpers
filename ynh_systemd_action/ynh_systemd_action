@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Start (or other actions) a service,  print a log in case of failure and optionnaly wait until the service is completely stared
+# Start (or other actions) a service,  print a log in case of failure and optionnaly wait until the service is completely started
 #
 # usage: ynh_system_reload service_name [action]
 # | arg: -n, --service_name= - Name of the service to reload. Default : $app
