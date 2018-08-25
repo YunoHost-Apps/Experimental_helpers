@@ -30,7 +30,7 @@ ynh_systemd_action() {
     local timeout=${timeout:-300}
     local wait_starting=true
 
-    if [[ -z $line_match ]]
+    if [[ -z "${line_match:-}" ]]
     then
         wait_starting=false
     fi
