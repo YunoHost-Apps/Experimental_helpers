@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 rbenv_install_dir="/opt/rbenv"
 # RBENV_ROOT is the directory of rbenv, it needs to be loaded as a environment variable.
 export RBENV_ROOT="$rbenv_install_dir"
@@ -50,12 +52,16 @@ fi
 # to rbenv shims (e.g. $RBENV_ROOT/shims/bundle)
 #
 # usage: ynh_install_ruby ruby_version user
-# | arg: ruby_version - Version of ruby to install.
+# | arg: -v, --ruby_version= - Version of ruby to install.
 #        If possible, prefer to use major version number (e.g. 8 instead of 8.10.0).
 #        The crontab will handle the update of minor versions when needed.
 ynh_install_ruby () {
+  # Declare an array to define the options of this helper.
+  declare -Ar args_array=( [v]=ruby_version= )
   # Use rbenv, https://github.com/rbenv/rbenv to manage the ruby versions
-  local ruby_version="$1"
+  local ruby_version
+  # Manage arguments with getopts
+  ynh_handle_getopts_args "$@"
 
   # Create $rbenv_install_dir
   mkdir -p "$rbenv_install_dir/plugins/ruby-build"

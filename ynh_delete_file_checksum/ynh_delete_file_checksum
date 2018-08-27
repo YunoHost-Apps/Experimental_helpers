@@ -1,12 +1,20 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Delete a file checksum from the app settings
 #
 # $app should be defined when calling this helper
 #
 # usage: ynh_remove_file_checksum file
-# | arg: file - The file for which the checksum will be deleted
+# | arg: -f, --file= - The file for which the checksum will be deleted
 ynh_delete_file_checksum () {
-	local checksum_setting_name=checksum_${1//[\/ ]/_}	# Replace all '/' and ' ' by '_'
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [f]=file= )
+	local file
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	local checksum_setting_name=checksum_${file//[\/ ]/_}	# Replace all '/' and ' ' by '_'
 	ynh_app_setting_delete $app $checksum_setting_name
 }
