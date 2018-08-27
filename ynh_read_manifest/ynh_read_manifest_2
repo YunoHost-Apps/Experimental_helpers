@@ -18,7 +18,7 @@ ynh_read_manifest () {
 	python3 -c "import sys, json;print(json.load(open('$manifest', encoding='utf-8'))['$key'])"
 }
 
-# Read the upstream version from the manifest 
+# Read the upstream version from the manifest
 # The version number in the manifest is defined by <upstreamversion>~ynh<packageversion>
 # For example : 4.3-2~ynh3
 # This include the number before ~ynh
