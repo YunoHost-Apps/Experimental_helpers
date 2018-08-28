@@ -29,11 +29,12 @@ ynh_systemd_action() {
     local length=${length:-20}
     local timeout=${timeout:-300}
 
+    # Start to read the log
     if [[ -n "${line_match:-}" ]]
     then
         local templog="$(mktemp)"
 	# Following the starting of the app in its log
-	if [ "$app_log" == "systemd" ] ; then
+	if [ "$log_path" == "systemd" ] ; then
             # Read the systemd journal
             journalctl -u $service_name -f --since=-45 > "$templog" &
 	else
@@ -42,10 +43,17 @@ ynh_systemd_action() {
 	fi
         # Get the PID of the tail command
         local pid_tail=$!
+    fi
 
-	echo "${action^} the service $service_name" >&2
-	systemctl $action $service_name || ( journalctl --lines=$length -u $service_name >&2 && false)
+    echo "${action^} the service $service_name" >&2
+    systemctl $action $service_name \
+        || ( journalctl --lines=$length -u $service_name >&2 \
+        ; test -n "$log_path" && echo "--" && tail --lines=$length "$log_path" >&2
+        ; false )
 
+    # Start the timeout and try to find line_match
+    if [[ -n "${line_match:-}" ]]
+    then
         local i=0
         for i in `seq 1 $timeout`
         do
@@ -62,6 +70,7 @@ ynh_systemd_action() {
         then
             echo "The service $service_name didn't fully started before the timeout." >&2
             journalctl --lines=$length -u $service_name >&2
+            test -n "$log_path" && echo "--" && tail --lines=$length "$log_path" >&2
         fi
 
         echo ""
