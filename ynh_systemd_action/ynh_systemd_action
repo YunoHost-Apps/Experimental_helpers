@@ -29,19 +29,25 @@ ynh_systemd_action() {
     local length=${length:-20}
     local timeout=${timeout:-300}
 
-    echo "${action^} the service $service_name" >&2
-    systemctl $action $service_name || ( journalctl --lines=$length -u $service_name >&2 && false)
-
     if [[ -n "${line_match:-}" ]]
     then
-        # Following the starting of the app in its log
         local templog="$(mktemp)"
-        tail -F -n1 "$log_path" > "$templog" &
+	# Following the starting of the app in its log
+	if [ "$app_log" == "systemd" ] ; then
+            # Read the systemd journal
+            journalctl -u $service_name -f --since=-45 > "$templog" &
+	else
+            # Read the specified log file
+            tail -F -n0 "$log_path" > "$templog" &
+	fi
         # Get the PID of the tail command
         local pid_tail=$!
 
+	echo "${action^} the service $service_name" >&2
+	systemctl $action $service_name || ( journalctl --lines=$length -u $service_name >&2 && false)
+
         local i=0
-        for i in $(seq 1 $timeout)
+        for i in `seq 1 $timeout`
         do
             # Read the log until the sentence is found, that means the app finished to start. Or run until the timeout
             if grep --quiet "$line_match" "$templog"
