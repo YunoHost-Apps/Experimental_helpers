@@ -48,7 +48,7 @@ ynh_systemd_action() {
     echo "${action^} the service $service_name" >&2
     systemctl $action $service_name \
         || ( journalctl --lines=$length -u $service_name >&2 \
-        ; test -n "$log_path" && echo "--" && tail --lines=$length "$log_path" >&2
+        ; test -n "$log_path" && echo "--" && tail --lines=$length "$log_path" >&2 \
         ; false )
 
     # Start the timeout and try to find line_match
