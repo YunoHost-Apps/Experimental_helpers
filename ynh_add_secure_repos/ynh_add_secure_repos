@@ -67,7 +67,6 @@ ynh_restore_repo() {
             then
                 echo "Everything is ok"
             else
-
                 sed -i "s@$arch@$arch_system@g" "/etc/apt/sources.list.d/$name_repo.list"
             fi 
         done
