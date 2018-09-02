@@ -83,6 +83,6 @@ ynh_backup_all_repos() {
     fi
     if [[ $(ls /eyc/apt/sources.list.d/) -ne "" ]] 
     then
-        ynh_backup "/etc/apt/preference.d/*"
+        ynh_backup "/etc/apt/sources.list.d/*"
     fi
 }
