@@ -16,11 +16,15 @@ ynh_mongo_setup_db() {
   ynh_app_setting_set $app dbpass $dbpass
   ynh_app_setting_set $app dbname $dbname
   mkdir -p /var/backups/mongobackups/
+  if [[ -e "/etc/cron.daily/mongo_backup" ]]; then
+      
+  else
   cat > "/etc/cron.daily/mongo_backup" << EOF
 #!/bin/bash
 mongodump --db $db_name --out /var/backups/mongobackups/
 find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
 EOF
+   fi
 	chmod +x "/etc/cron.daily/mongo_backup"   
 }
 
