@@ -28,13 +28,13 @@ ynh_download_file () {
 
     # Load value from configuration file (see above for a small doc about this file
     # format)
-    local file_url=$(grep 'FILE_URL=' "$YNH_CWD/../conf/${source_id}.src" | cut -d= -f2-)
-    local file_sum=$(grep 'FILE_SUM=' "$YNH_CWD/../conf/${source_id}.src" | cut -d= -f2-)
-    local file_sumprg=$(grep 'FILE_SUM_PRG=' "$YNH_CWD/../conf/${source_id}.src" | cut -d= -f2-)
-    local filename=$(grep 'FILENAME=' "$YNH_CWD/../conf/${source_id}.src" | cut -d= -f2-)
+    local file_url=$(grep 'FILE_URL=' "$YNH_CWD/../conf/${source_id}.src_file" | cut -d= -f2-)
+    local file_sum=$(grep 'FILE_SUM=' "$YNH_CWD/../conf/${source_id}.src_file" | cut -d= -f2-)
+    local file_sumprg=$(grep 'FILE_SUM_PRG=' "$YNH_CWD/../conf/${source_id}.src_file" | cut -d= -f2-)
+    local filename=$(grep 'FILENAME=' "$YNH_CWD/../conf/${source_id}.src_file" | cut -d= -f2-)
  
     # Default value
-    file_sumprg=${src_sumprg:-sha256sum}
+    file_sumprg=${file_sumprg:-sha256sum}
     if [ "$filename" = "" ] ; then
         filename="$(basename "$file_url")"
     fi
