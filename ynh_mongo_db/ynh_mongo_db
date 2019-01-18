@@ -4,40 +4,28 @@
 # Create a Database in mongodb
 # Usage : ynh_mongo_setup_db dbname dbuser
 ynh_mongo_setup_db() {
-  db_name=$1
-  db_user=$2
-  db_pass=$(ynh_string_random)
+  local db_name=$1
+  local db_user=$2
+  local db_pass=$(ynh_string_random)
   # Create a user for the Database
   mongo --shell "$db_name" --eval 'db.createUser( { user: "'${db_user}'", pwd: "'${db_pass}'", roles: [ "readWrite" ] } );' <<< exit
   # Set the user as admin of the db
   mongo --shell "$db_name" --eval 'db.grantRolesToUser("'${db_user}'",[{ role: "clusterMonitor", db: "admin" }]);' <<< exit
-  # Store Setting for the remove part.
-  ynh_app_setting_set $app dbuser $dbuser
-  ynh_app_setting_set $app dbpass $dbpass
-  ynh_app_setting_set $app dbname $dbname
-  mkdir -p /var/backups/mongobackups/
-  if [[ -e "/etc/cron.daily/mongo_backup" ]]; then
-      
-  else
-  cat > "/etc/cron.daily/mongo_backup" << EOF
-#!/bin/bash
-mongodump --db $db_name --out /var/backups/mongobackups/
-find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
-EOF
-   fi
-	chmod +x "/etc/cron.daily/mongo_backup"   
 }
 
 # Remove a Database in Mongodb
 # Usage : ynh_mongo_remove_db dbname
 ynh_mongo_remove_db() {
-  db_name=$1
-  mongo $db_name --eval "db.dropDatabase()"
+  local db_user="$1"
+  local db_name="$2"
+  mongo --shell "$dbname" --eval 'db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})' <<< exit
+  mongo --shell "$dbname" --eval 'db.runCommand({dropDatabase: 1})' <<< exit
 }
 
 ynh_mongo_dump_db() {
-  db_name=$1
+  local db_name=$1
   date_today=$(date +"%m-%d-%y")
+  mkdir -p /var/backups/mongobackups/
   find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
   mongodump --db $db_name --out /var/backups/mongobackups/$date_today
 }
