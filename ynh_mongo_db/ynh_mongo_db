@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 # Create a Database in mongodb
 # Usage : ynh_mongo_setup_db dbname dbuser
 ynh_mongo_setup_db() {
