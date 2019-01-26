@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# In order to use this helper, you'll need the package 'bc' to be installed.
+
 increment_progression=0
 ynh_script_progression () {
 	# Get the number of occurrences of 'ynh_script_progression' in the script. Except those are commented.
