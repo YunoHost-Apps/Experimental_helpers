@@ -1,27 +1,23 @@
 #!/bin/bash
 
+increment_progression=0
 ynh_script_progression () {
 	# Get the number of occurrences of 'ynh_script_progression' in the script. Except those are commented.
 	local max_progression="$(grep -c "^[^#]*ynh_script_progression" $0)"
 
 	# Increment each execution of ynh_script_progression in this script.
-	if [ -z "$increment_progression" ]
-	then
-		increment_progression=1
-	else
-		increment_progression=$(( $increment_progression + 1))
-	fi
+	increment_progression=$(( $increment_progression + 1))
 
 	# Set the scale of the progression bar
 	local scale=20
 	# Defines the ratio by reducing $max_progression to the size of the scale.
-	local progression_ratio=$(( $max_progression / $scale ))
+	local progression_ratio=$(echo "scale=2;$max_progression / $scale" | bc )
 	# progress_string(1,2) should have the size of the scale.
 	local progress_string1="####################"
 	local progress_string0="                    "
 
 	# Reduce $increment_progression to the size of the scale by using $progression_ratio
-	local effective_progression=$(( $increment_progression / $progression_ratio))
+	local effective_progression=$(echo "$increment_progression / $progression_ratio" | bc )
 	# Build $progression_bar from progress_string(1,2) according to $effective_progression
 	local progression_bar="${progress_string1:0:$effective_progression}${progress_string0:0:$(( $scale - $effective_progression ))}"
 
