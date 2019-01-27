@@ -55,7 +55,7 @@ ynh_script_progression () {
 	local scale=20
 	# progress_string(1,2) should have the size of the scale.
 	local progress_string1="####################"
-	local progress_string0="                    "
+	local progress_string0="...................."
 
 	# Reduce $increment_progression to the size of the scale
 	if [ $last -eq 0 ]
