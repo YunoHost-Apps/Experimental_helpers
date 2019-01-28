@@ -28,6 +28,7 @@ ynh_app_changelog () {
 	if [ -z "current_revision" ] || [ -z "repo" ] || [ -z "branch" ]
 	then
 		ynh_print_warn "Unable to build the changelog..."
+		touch changelog
 		return 0
 	fi
 
@@ -41,5 +42,9 @@ ynh_app_changelog () {
 	# Cut the history before the current commit, to keep only newer commits.
 	# Then use sed to reorganise each lines and have a nice list of commits since the last upgrade.
 	# This list is redirected into the file changelog
-	git log origin/$branch --pretty=oneline | head --lines=$(($line_to_head-1)) | sed 's/^\([[:alnum:]]*\)\(.*\)/*\2 (\1)/g' > changelog)
+	git log origin/$branch --pretty=oneline | head --lines=$(($line_to_head-1)) | sed 's/^\([[:alnum:]]*\)\(.*\)/*(\1) -> \2/g' > ../changelog)
+	# Remove 'Merge pull request' commits
+	sed -i '/Merge pull request #[[:digit:]]* from/d' changelog
+	# As well as conflict resolving commits
+	sed -i '/Merge branch .* into/d' changelog
 }
