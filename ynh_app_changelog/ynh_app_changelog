@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Create a changelog for an app after an upgrade.
+#
+# The changelog is printed into the file ./changelog for the time of the upgrade.
+#
+# In order to create a changelog, ynh_app_changelog will get info from /etc/yunohost/apps/$app/status.json
+# In order to find the current commit use by the app.
+# The remote repository, and the branch.
+# The changelog will be only the commits since the current revision.
+#
+# Because of the need of those info, ynh_app_changelog works only
+# with apps that have been installed from a list.
+#
+# usage: ynh_app_changelog
+ynh_app_changelog () {
+	get_value_from_settings ()
+	{
+		local value="$1"
+		# Extract a value from the status.json file of an installed app.
+		cat /etc/yunohost/apps/$app/status.json | sed "s/.*$value\": \"\([^\"]*\).*/\1/"
+	}
+
+	local current_revision="$(get_value_from_settings revision)"
+	local repo="$(get_value_from_settings url)"
+	local branch="$(get_value_from_settings branch)"
+	# ynh_app_changelog works only with an app installed from a list.
+	if [ -z "current_revision" ] || [ -z "repo" ] || [ -z "branch" ]
+	then
+		ynh_print_warn "Unable to build the changelog..."
+		return 0
+	fi
+
+	# Fetch the history of the repository, without cloning it
+	mkdir git_history
+	(cd git_history
+	ynh_exec_warn_less git init
+	ynh_exec_warn_less git remote add -f origin $repo
+	# Get the line of the current commit of the installed app in the history.
+	local line_to_head=$(git log origin/$branch --pretty=oneline | grep --line-number "$current_revision" | cut -d':' -f1)
+	# Cut the history before the current commit, to keep only newer commits.
+	# Then use sed to reorganise each lines and have a nice list of commits since the last upgrade.
+	# This list is redirected into the file changelog
+	git log origin/$branch --pretty=oneline | head --lines=$(($line_to_head-1)) | sed 's/^\([[:alnum:]]*\)\(.*\)/*\2 (\1)/g' > changelog)
+}
