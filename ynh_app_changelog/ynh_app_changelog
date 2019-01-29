@@ -18,14 +18,15 @@ ynh_app_changelog () {
 	{
 		local value="$1"
 		# Extract a value from the status.json file of an installed app.
-		cat /etc/yunohost/apps/$app/status.json | sed "s/.*$value\": \"\([^\"]*\).*/\1/"
+
+		grep "$value\": \"" /etc/yunohost/apps/$app/status.json | sed "s/.*$value\": \"\([^\"]*\).*/\1/"
 	}
 
 	local current_revision="$(get_value_from_settings revision)"
 	local repo="$(get_value_from_settings url)"
 	local branch="$(get_value_from_settings branch)"
 	# ynh_app_changelog works only with an app installed from a list.
-	if [ -z "current_revision" ] || [ -z "repo" ] || [ -z "branch" ]
+	if [ -z "$current_revision" ] || [ -z "$repo" ] || [ -z "$branch" ]
 	then
 		ynh_print_warn "Unable to build the changelog..."
 		touch changelog
@@ -47,4 +48,14 @@ ynh_app_changelog () {
 	sed -i '/Merge pull request #[[:digit:]]* from/d' changelog
 	# As well as conflict resolving commits
 	sed -i '/Merge branch .* into/d' changelog
+
+	# Get the value of admin_mail_html
+	admin_mail_html=$(ynh_app_setting_get $app admin_mail_html)
+	admin_mail_html="${admin_mail_html:-0}"
+
+	# If a html email is required. Apply html to the changelog.
+ 	if [ "$admin_mail_html" -eq 1 ]
+ 	then
+		sed -in-place "s@\*(\([[:alnum:]]*\)) -> \(.*\)@* __URL_TAG1__\2__URL_TAG2__${repo}/commit/\1__URL_TAG3__@g" changelog
+ 	fi
 }
