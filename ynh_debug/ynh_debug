@@ -9,7 +9,7 @@ ynh_debug () {
 	# Disable set xtrace for the helper itself, to not pollute the debug log
 	set +x
 	# Declare an array to define the options of this helper.
-	local legacy_args=met
+	local legacy_args=mt
 	declare -Ar args_array=( [m]=message= [t]=trace= )
 	local message
 	local trace
