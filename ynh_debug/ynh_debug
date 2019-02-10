@@ -39,17 +39,15 @@ ynh_debug () {
 		set +x
 		# Get the current file descriptor of xtrace
 		old_bash_xtracefd=$BASH_XTRACEFD
+		# Add the current file name and the line number of any command currently running while tracing.
+		PS4='$(basename ${BASH_SOURCE[0]})-L${LINENO}: '
 		# Force xtrace to stderr
 		BASH_XTRACEFD=2
-		# From now on, redirect any command to stderr instead of stdout
-		exec >&2
 	fi
 	if [ "$trace" == "0" ]
 	then
 		ynh_debug --message="Disable debugging"
 		set +x
-		# Restore the normal usage of stdout
-		exec >&1
 		# Put xtrace back to its original fild descriptor
 		BASH_XTRACEFD=$old_bash_xtracefd
 	fi
