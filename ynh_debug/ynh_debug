@@ -1,0 +1,58 @@
+#!/bin/bash
+
+# Debugger for app packagers
+#
+# usage: ynh_debug [--message=message] [--exec=command] [--trace=1/0]
+# | arg: -m, --message= - The text to print
+# | arg: -e, --exec=    - The command to execute
+# | arg: -t, --trace=   - Turn on or off the trace of the script. Usefull to trace nonly a small part of a script.
+ynh_debug () {
+	# Disable set xtrace for the helper itself, to not pollute the debug log
+	set +x
+	# Declare an array to define the options of this helper.
+	local legacy_args=met
+	declare -Ar args_array=( [m]=message= [e]=exec= [t]=trace= )
+	local message
+	local exec
+	local trace
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+	# Redisable xtrace, ynh_handle_getopts_args set it back
+	set +x
+	message=${message:-}
+	exec=${exec:-}
+	trace=${trace:-}
+
+	if [ -n "$message" ]
+	then
+		ynh_print_log "\e[34m\e[1m[DEBUG]\e[0m ${message}" >&2
+	fi
+
+	if [ -n "$exec" ]
+	then
+		ynh_print_log "\e[34m\e[1m[DEBUG]\e[0m $(eval $exec)" >&2
+	fi
+
+	if [ "$trace" == "1" ]
+	then
+		ynh_debug --message="Enable debugging"
+		set +x
+		# Get the current file descriptor of xtrace
+		old_bash_xtracefd=$BASH_XTRACEFD
+		# Force xtrace to stderr
+		BASH_XTRACEFD=2
+		# From now on, redirect any command to stderr instead of stdout
+		exec >&2
+	fi
+	if [ "$trace" == "0" ]
+	then
+		ynh_debug --message="Disable debugging"
+		set +x
+		# Restore the normal usage of stdout
+		exec >&1
+		# Put xtrace back to its original fild descriptor
+		BASH_XTRACEFD=$old_bash_xtracefd
+	fi
+	# Renable set xtrace
+	set -x
+}
