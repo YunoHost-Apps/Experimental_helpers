@@ -2,35 +2,27 @@
 
 # Debugger for app packagers
 #
-# usage: ynh_debug [--message=message] [--exec=command] [--trace=1/0]
+# usage: ynh_debug [--message=message] [--trace=1/0]
 # | arg: -m, --message= - The text to print
-# | arg: -e, --exec=    - The command to execute
 # | arg: -t, --trace=   - Turn on or off the trace of the script. Usefull to trace nonly a small part of a script.
 ynh_debug () {
 	# Disable set xtrace for the helper itself, to not pollute the debug log
 	set +x
 	# Declare an array to define the options of this helper.
 	local legacy_args=met
-	declare -Ar args_array=( [m]=message= [e]=exec= [t]=trace= )
+	declare -Ar args_array=( [m]=message= [t]=trace= )
 	local message
-	local exec
 	local trace
 	# Manage arguments with getopts
 	ynh_handle_getopts_args "$@"
 	# Redisable xtrace, ynh_handle_getopts_args set it back
 	set +x
 	message=${message:-}
-	exec=${exec:-}
 	trace=${trace:-}
 
 	if [ -n "$message" ]
 	then
 		ynh_print_log "\e[34m\e[1m[DEBUG]\e[0m ${message}" >&2
-	fi
-
-	if [ -n "$exec" ]
-	then
-		ynh_print_log "\e[34m\e[1m[DEBUG]\e[0m $(eval $exec)" >&2
 	fi
 
 	if [ "$trace" == "1" ]
@@ -53,4 +45,15 @@ ynh_debug () {
 	fi
 	# Renable set xtrace
 	set -x
+}
+
+# Execute a command and print the result as debug
+#
+# usage: ynh_debug_exec command to execute
+# usage: ynh_debug_exec "command to execute | following command"
+# In case of use of pipes, you have to use double quotes. Otherwise, this helper will be executed with the first command, then be sent to the next pipe.
+#
+# | arg: command - command to execute
+ynh_debug_exec () {
+	ynh_debug --message="$(eval $@)"
 }
