@@ -9,6 +9,8 @@ ynh_maintenance_mode_ON () {
 		domain=$(ynh_app_setting_get $app domain)
 	fi
 
+	mkdir -p /var/www/html/
+	
 	# Create an html to serve as maintenance notice
 	echo "<!DOCTYPE html>
 <html>
