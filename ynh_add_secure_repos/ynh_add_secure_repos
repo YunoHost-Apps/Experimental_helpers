@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Helper to add a repos quickly and without problem. It create a repos.list in $etc/apt/sources.list.d/. It doesn't update the repos, so it must be used with the ynh_add_dependencies.
+# usage : ynh_add_repos nameoftherepos url
+# URL IS SOMETHING LIKE : "deb $mirrorurl $prefix(stable or jessie...) $otherprefix(main, non-free, or somting like that)"
+ynh_add_repo(){
+  local name_repos="$1"
+  local url_repos="$2"
+  echo "# $name_repos
+    ${url_repos}" 
+    > "/etc/apt/sources.list.d/$name_repos.list"
+}
+
+# Helper to pin a repos easily.
+# usage : ynh_add_pin_repo nameoftherepos nbrofthepin origin 
+# Origin is the name of the orga which set up this repos ex: Debian 
+ynh_add_pin_repo() {
+  local name_repos="$1"
+  local pin="$2"
+  local origin="$3"
+  echo "Package: *
+       Pin: release o=$origin,a=$name_repos
+       Pin-Priority: $pin" \
+    > "/etc/apt/preferences.d/$name_repos"
+}
+
+# Add in a secure way backports repo.
+# usage : ynh_add_secure_backport
+ynh_add_secure_backport() {
+   local name_repos="debian-backports"
+   local origin="Debian"
+   local lsb_version="$(ynh_get_debian_release)"
+   local url="deb https://ftp.debian.org/debian $lsb_version-backports main"
+   local pin="450"
+   ynh_add_repos $name_repos $url 
+   ynh_add_pin_repo $name_repos $origin $pin
+}
+
+# Remove a repos easily in a secure way using the ynh_secure_remove helper
+ynh_rm_secure_repos() {
+  local name_repos=$1
+  ynh_secure_remove "/etc/apt/preferences.d/$name_repos"
+  ynh_secure_remove "/etc/apt/sources.list.d/$name_repos.list"
+}
+
+# Backup the repo
+ynh_backup_repo() {
+  local name_repo=$1
+  ynh_backup "/etc/apt/preference.d/$name_repo"
+  ynh_backup "/etc/apt/sources.list.d/$name_repo.list"
+}
+
+ynh_restore_repo() {
+    local name_repo=$1
+    local custom_arch=$2
+    ynh_restore "/etc/apt/preference.d/$name_repo"
+    if [[ custom_arch -ne true ]]
+        local arch_system=$(lsb_release -c)
+        arch_system=$(echo ${arch#Codename:})
+        same_arch=$(cat $name_repo | grep $arch)
+        archs = [jessie, stretch, buster]
+        ynh_restore "/etc/apt/sources.list.d/$name_repo.list"
+        for arch in archs
+        do
+            same_arch=$(cat $name_repo | grep $arch)
+            if [[ same_arch -e arch ]]
+            then
+                echo "Everything is ok"
+            else
+                sed -i "s@$arch@$arch_system@g" "/etc/apt/sources.list.d/$name_repo.list"
+            fi 
+        done
+    else 
+        echo "Attention: vous avez choisi de personnaliser votre header"
+        ynh_restore "/etc/apt/sources.list.d/$name_repo.list"
+    fi
+}
+
+ynh_backup_all_repos() {
+    if [[ $(ls /etc/apt/preference.d/) -ne "" ]]
+    then
+        ynh_backup "/etc/apt/preference.d/*"
+    fi
+    if [[ $(ls /eyc/apt/sources.list.d/) -ne "" ]] 
+    then
+        ynh_backup "/etc/apt/sources.list.d/*"
+    fi
+}
