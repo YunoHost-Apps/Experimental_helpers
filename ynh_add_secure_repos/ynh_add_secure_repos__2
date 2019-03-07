@@ -129,7 +129,7 @@ ynh_install_extra_repo () {
 	# Build $pin from the uri without http and any sub path
 	local pin="${uri#*://}"
 	pin="${pin%%/*}"
-	ynh_pin_repo --package="*" --pin="$pin" $forward_append
+	ynh_pin_repo --package="*" --pin="origin \"$pin\"" $forward_append
 
 	# Get the public key for the repo
 	if [ -n "$key" ]
