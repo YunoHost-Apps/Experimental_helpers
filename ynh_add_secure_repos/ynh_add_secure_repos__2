@@ -105,8 +105,10 @@ ynh_install_extra_repo () {
 	if [ $append -eq 1 ]
 	then
 		append="--append"
+		wget_append="tee -a"
 	else
 		append=""
+		wget_append="tee"
 	fi
 
 	# Split the repository into uri, suite and components.
@@ -129,13 +131,13 @@ ynh_install_extra_repo () {
 	# Build $pin from the uri without http and any sub path
 	local pin="${uri#*://}"
 	pin="${pin%%/*}"
-	ynh_pin_repo --package="*" --pin="origin \"$pin\"" $forward_append
+	ynh_pin_repo --package="*" --pin="origin \"$pin\"" --name="$name" $append
 
 	# Get the public key for the repo
 	if [ -n "$key" ]
 	then
 		mkdir -p "/etc/apt/trusted.gpg.d"
-		wget -q "/etc/apt/trusted.gpg.d/$name.gpg" $append $key
+		wget -q "$key" -O - | $wget_append /etc/apt/trusted.gpg.d/$name.gpg
 	fi
 
 	# Update the list of package with the new repo
