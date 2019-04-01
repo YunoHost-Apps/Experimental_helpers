@@ -1,8 +1,12 @@
 #!/bin/bash
 
+#=================================================
+# EXPERIMENTAL HELPERS
+#=================================================
+
 # Pin a repository.
 #
-# usage: ynh_pin_repo --package=packages --pin=pin_filter --priority=priority_value [--name=name] [--append]
+# usage: ynh_pin_repo --package=packages --pin=pin_filter [--priority=priority_value] [--name=name] [--append]
 # | arg: -p, --package - Packages concerned by the pin. Or all, *.
 # | arg: -i, --pin - Filter for the pin.
 # | arg: -p, --priority - Priority for the pin
@@ -83,17 +87,19 @@ ynh_add_repo () {
 
 # Add an extra repository correctly, pin it and get the key.
 #
-# usage: ynh_install_extra_repo --repo="repo" [--key=key_url] [--name=name] [--append]
+# usage: ynh_install_extra_repo --repo="repo" [--key=key_url] [--priority=priority_value] [--name=name] [--append]
 # | arg: -r, --repo - Complete url of the extra repository.
 # | arg: -k, --key - url to get the public key.
+# | arg: -p, --priority - Priority for the pin
 # | arg: -n, --name - Name for the files for this repo, $app as default value.
 # | arg: -a, --append - Do not overwrite existing files.
 ynh_install_extra_repo () {
 	# Declare an array to define the options of this helper.
-	local legacy_args=rkna
-	declare -Ar args_array=( [r]=repo= [k]=key= [n]=name= [a]=append )
+	local legacy_args=rkpna
+	declare -Ar args_array=( [r]=repo= [k]=key= [p]=priority= [n]=name= [a]=append )
 	local repo
 	local key
+	local priority
 	local name
 	local append
 	# Manage arguments with getopts
@@ -101,6 +107,7 @@ ynh_install_extra_repo () {
 	name="${name:-$app}"
 	append=${append:-0}
 	key=${key:-0}
+	priority=${priority:-}
 
 	if [ $append -eq 1 ]
 	then
@@ -131,7 +138,12 @@ ynh_install_extra_repo () {
 	# Build $pin from the uri without http and any sub path
 	local pin="${uri#*://}"
 	pin="${pin%%/*}"
-	ynh_pin_repo --package="*" --pin="origin \"$pin\"" --name="$name" $append
+	# Set a priority only if asked
+	if [ -n "$priority" ]
+	then
+		priority="--priority=$priority"
+	fi
+	ynh_pin_repo --package="*" --pin="origin \"$pin\"" $priority --name="$name" $append
 
 	# Get the public key for the repo
 	if [ -n "$key" ]
@@ -170,4 +182,39 @@ ynh_remove_extra_repo () {
 
 	# Update the list of package to exclude the old repo
 	ynh_package_update
+}
+
+# Install packages from an extra repository properly.
+#
+# usage: ynh_install_extra_app_dependencies --repo="repo" --package="dep1 dep2" [--key=key_url] [--name=name]
+# | arg: -r, --repo - Complete url of the extra repository.
+# | arg: -p, --package - The packages to install from this extra repository
+# | arg: -k, --key - url to get the public key.
+# | arg: -n, --name - Name for the files for this repo, $app as default value.
+ynh_install_extra_app_dependencies () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=rpkn
+	declare -Ar args_array=( [r]=repo= [p]=package= [k]=key= [n]=name= )
+	local repo
+	local package
+	local key
+	local name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+	name="${name:-$app}"
+	key=${key:-0}
+
+	# Set a key only if asked
+	if [ -n "$key" ]
+	then
+		key="--key=$key"
+	fi
+	# Add an extra repository for those packages
+	ynh_install_extra_repo --repo="$repo" $key --priority=995 --name=$name
+
+	# Install requested dependencies from this extra repository.
+	ynh_add_app_dependencies --package="$package"
+
+	# Remove this extra repository after packages are installed
+	ynh_remove_extra_repo --name=$app
 }
