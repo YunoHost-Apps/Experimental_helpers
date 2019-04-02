@@ -21,7 +21,7 @@ ynh_install_php () {
 	fi
 
 	# Store the ID of this app and the version of php requested for it
-	echo "$YNH_APP_ID:$phpversion" | tee --append "/etc/php/ynh_app_version"
+	echo "$YNH_APP_INSTANCE_NAME:$phpversion" | tee --append "/etc/php/ynh_app_version"
 
 	ynh_install_extra_app_dependencies --repo="https://packages.sury.org/php/ $(lsb_release -sc) main" --key="https://packages.sury.org/php/apt.gpg" --package="php$phpversion php${phpversion}-fpm php${phpversion}-common"
 
@@ -43,7 +43,7 @@ ynh_remove_php () {
 	fi
 
 	# Remove the line for this app
-	sed --in-place "/$YNH_APP_ID:$phpversion/d" "/etc/php/ynh_app_version"
+	sed --in-place "/$YNH_APP_INSTANCE_NAME:$phpversion/d" "/etc/php/ynh_app_version"
 
 	# If no other app uses this version of php, remove it.
 	if ! grep --quiet "$phpversion" "/etc/php/ynh_app_version"
