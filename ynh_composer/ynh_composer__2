@@ -9,7 +9,7 @@ ynh_composer_exec () {
 	# Declare an array to define the options of this helper.
 	local legacy_args=vwc
 	declare -Ar args_array=( [v]=phpversion= [w]=workdir= [c]=commands= )
-	local phpversion
+	local phpversion="${phpversion:-7.0}"
 	local workdir
 	local commands
 	# Manage arguments with getopts
@@ -29,7 +29,7 @@ ynh_install_composer () {
 	# Declare an array to define the options of this helper.
 	local legacy_args=vw
 	declare -Ar args_array=( [v]=phpversion= [w]=workdir= )
-	local phpversion
+	local phpversion="${phpversion:-7.0}"
 	local workdir
 	# Manage arguments with getopts
 	ynh_handle_getopts_args "$@"
