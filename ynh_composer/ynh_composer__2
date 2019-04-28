@@ -9,12 +9,13 @@ ynh_composer_exec () {
 	# Declare an array to define the options of this helper.
 	local legacy_args=vwc
 	declare -Ar args_array=( [v]=phpversion= [w]=workdir= [c]=commands= )
-	local phpversion="${phpversion:-7.0}"
+	local phpversion
 	local workdir
 	local commands
 	# Manage arguments with getopts
 	ynh_handle_getopts_args "$@"
 	workdir="${workdir:-$final_path}"
+	phpversion="${phpversion:-7.0}"
 
 	COMPOSER_HOME="$workdir/.composer" \
 		php${phpversion} "$workdir/composer.phar" $commands \
@@ -29,11 +30,12 @@ ynh_install_composer () {
 	# Declare an array to define the options of this helper.
 	local legacy_args=vw
 	declare -Ar args_array=( [v]=phpversion= [w]=workdir= )
-	local phpversion="${phpversion:-7.0}"
+	local phpversion
 	local workdir
 	# Manage arguments with getopts
 	ynh_handle_getopts_args "$@"
 	workdir="${workdir:-$final_path}"
+	phpversion="${phpversion:-7.0}"
 
 	curl -sS https://getcomposer.org/installer \
 		| COMPOSER_HOME="$workdir/.composer" \
