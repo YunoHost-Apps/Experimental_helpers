@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
-
-# Argument $1 is the size of the swap in MiB
+# Check the amount of available RAM
+#
+# usage: ynh_add_swap --size=SWAP in Mb
+# | arg: -s, --size= - Amount of SWAP to add in Mb.
 ynh_add_swap () {
 	# Declare an array to define the options of this helper.
 	declare -Ar args_array=( [s]=size= )
@@ -36,29 +37,29 @@ ynh_add_swap () {
 	fi
 
 	# If there's enough space for a swap, and no existing swap here
-	if [ $swap_size -ne 0 ] && [ ! -e /swap ]
+	if [ $swap_size -ne 0 ] && [ ! -e /swap_$app ]
 	then
 		# Preallocate space for the swap file
-		fallocate -l ${swap_size}K /swap
-		chmod 0600 /swap
+		fallocate -l ${swap_size}K /swap_$app
+		chmod 0600 /swap_$app
 		# Create the swap
-		mkswap /swap
+		mkswap /swap_$app
 		# And activate it
-		swapon /swap
+		swapon /swap_$app
 		# Then add an entry in fstab to load this swap at each boot.
-		echo -e "/swap swap swap defaults 0 0 #Swap added by $app" >> /etc/fstab
+		echo -e "/swap_$app swap swap defaults 0 0 #Swap added by $app" >> /etc/fstab
 	fi
 }
 
 ynh_del_swap () {
 	# If there a swap at this place
-	if [ -e /swap ]
+	if [ -e /swap_$app ]
 	then
 		# Clean the fstab
 		sed -i "/#Swap added by $app/d" /etc/fstab
 		# Desactive the swap file
-		swapoff /swap
+		swapoff /swap_$app
 		# And remove it
-		rm /swap
+		rm /swap_$app
 	fi
 }
