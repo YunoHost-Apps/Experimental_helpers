@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Check the amount of available RAM
+# Add swap
 #
 # usage: ynh_add_swap --size=SWAP in Mb
 # | arg: -s, --size= - Amount of SWAP to add in Mb.
