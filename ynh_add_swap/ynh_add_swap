@@ -17,6 +17,15 @@ ynh_add_swap () {
 	# Because we don't want to fill the disk with a swap file, divide by 2 the available space.
 	local usable_space=$(( $free_space / 2 ))
 
+ 	SD_CARD_CAN_SWAP=${SD_CARD_CAN_SWAP:-0}
+
+	# Swap on SD card only if it's is specified
+	if ynh_is_main_device_a_sd_card && [ "$SD_CARD_CAN_SWAP" == "0" ]
+	then
+		ynh_print_warn --message="The main mountpoint of your system '/' is on an SD card, swap will not be added to prevent some damage of this one, but that can cause troubles for the app $app. If you still want activate the swap, you can relaunch the command preceded by 'SD_CARD_CAN_SWAP=1'"
+		return
+	fi
+
 	# Compare the available space with the size of the swap.
 	# And set a acceptable size from the request
 	if [ $usable_space -ge $swap_max_size ]
@@ -61,5 +70,21 @@ ynh_del_swap () {
 		swapoff /swap_$app
 		# And remove it
 		rm /swap_$app
+	fi
+}
+
+# Check if the device of the main mountpoint "/" is an SD card
+#
+# [internal]
+#
+# return 0 if it's an SD card, else 1
+ynh_is_main_device_a_sd_card () {
+	local main_device=$(lsblk --output PKNAME --noheadings $(findmnt / --nofsroot --uniq --output source --noheadings --first-only))
+
+	if echo $main_device | grep --quiet "mmc" && [ $(tail -n1 /sys/block/$main_device/queue/rotational) == "0" ]
+	then
+		return 0
+	else
+		return 1
 	fi
 }
