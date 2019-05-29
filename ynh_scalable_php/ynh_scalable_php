@@ -91,6 +91,14 @@ ynh_get_scalable_phpfpm () {
     fi
     php_max_children=$(less0 $php_max_children)
 
+    # To not overload the proc, limit the number of children to 4 times the number of cores.
+    local core_number=$(nproc)
+    local max_proc=$(( $core_number * 4 ))
+    if [ php_max_children -gt $max_proc ]
+    then
+        php_max_children=$max_proc
+    fi
+
     if [ "$php_pm" = "dynamic" ]
     then
         # Define pm.start_servers, pm.min_spare_servers and pm.max_spare_servers for a dynamic process manager
