@@ -108,7 +108,9 @@ ynh_add_fpm_config () {
         fi
 
         # Concatene the extra config.
-        cat ../conf/extra_php-fpm.conf >> "$finalphpconf"
+        if [ -e ../conf/extra_php-fpm.conf ]; then
+            cat ../conf/extra_php-fpm.conf >> "$finalphpconf"
+        fi
 	fi
 	sudo chown root: "$finalphpconf"
 	ynh_store_file_checksum --file="$finalphpconf"
