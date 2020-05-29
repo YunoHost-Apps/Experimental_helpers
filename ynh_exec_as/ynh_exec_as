@@ -2,7 +2,7 @@
 
 # Execute a command as another user
 # usage: exec_as USER COMMAND [ARG ...]
-exec_as() {
+ynh_exec_as() {
   local USER=$1
   shift 1
 
