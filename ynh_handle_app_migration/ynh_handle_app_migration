@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Make the main steps to migrate an app to its fork.
 #
 # This helper has to be used for an app which needs to migrate to a new name or a new fork
@@ -42,8 +44,8 @@
 # `(cd /tmp; echo "/tmp/$script_post_migration" | at now + 2 minutes)`
 #
 # usage: ynh_handle_app_migration migration_id migration_list
-# | arg: migration_id  - ID from which to migrate
-# | arg: migration_list - File specifying every file to move (one file per line)
+# | arg: -i, --migration_id= - ID from which to migrate
+# | arg: -l, --migration_list= - File specifying every file to move (one file per line)
 ynh_handle_app_migration ()  {
   #=================================================
   # LOAD SETTINGS
@@ -53,10 +55,14 @@ ynh_handle_app_migration ()  {
   local old_app_id=$YNH_APP_ID
   local old_app_number=$YNH_APP_INSTANCE_NUMBER
 
+  # Declare an array to define the options of this helper.
+  declare -Ar args_array=( [i]=migration_id= [l]=migration_list= )
   # Get the id from which to migrate
-  local migration_id="$1"
+  local migration_id
   # And the file with the paths to move
-  local migration_list="$2"
+  local migration_list
+  # Manage arguments with getopts
+  ynh_handle_getopts_args "$@"
 
   # Get the new app id in the manifest
   local new_app_id=$(grep \"id\": ../manifest.json | cut -d\" -f4)
@@ -93,7 +99,7 @@ ynh_handle_app_migration ()  {
 
     # TODO Handle multi instance apps...
     # Check that there is not already an app installed for this id.
-    (yunohost app list --installed -f "$new_app" | grep -q id) \
+    (yunohost app list --installed -f "$new_app" | grep -q -w "$new_app") \
     && ynh_die "$new_app is already installed"
 
     #=================================================
@@ -137,7 +143,7 @@ ynh_handle_app_migration ()  {
         new_label=$(echo $new_app_id | cut -c1 | tr [:lower:] [:upper:])$(echo $new_app_id | cut -c2-)
         ynh_app_setting_set $new_app label $new_label
     fi
-    
+
     #=================================================
     # MOVE FILES TO THE NEW DESTINATION
     #=================================================
