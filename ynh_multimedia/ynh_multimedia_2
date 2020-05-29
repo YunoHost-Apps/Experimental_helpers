@@ -1,11 +1,13 @@
 #!/bin/bash
 
+# Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
+
 # Install or update the main directory yunohost.multimedia
 #
 # usage: ynh_multimedia_build_main_dir
 ynh_multimedia_build_main_dir () {
-        local ynh_media_release="v1.0"
-        local checksum="4852c8607db820ad51f348da0dcf0c88"
+        local ynh_media_release="v1.2"
+        local checksum="806a827ba1902d6911095602a9221181"
 
         # Download yunohost.multimedia scripts
         wget -nv https://github.com/YunoHost-Apps/yunohost.multimedia/archive/${ynh_media_release}.tar.gz 
@@ -13,6 +15,10 @@ ynh_multimedia_build_main_dir () {
         # Check the control sum
         echo "${checksum} ${ynh_media_release}.tar.gz" | md5sum -c --status \
                 || ynh_die "Corrupt source"
+
+	# Check if the package acl is installed. Or install it.
+	ynh_package_is_installed 'acl' \
+		|| ynh_package_install acl
 
         # Extract
         mkdir yunohost.multimedia-master
@@ -25,11 +31,16 @@ ynh_multimedia_build_main_dir () {
 #
 # usage: ynh_multimedia_addfolder "Source directory" "Destination directory"
 #
-# | arg: Source directory - The real directory which contains your medias.
-# | arg: Destination directory - The name and the place of the symbolic link, relative to "/home/yunohost.multimedia"
+# | arg: -s, --source_dir= - Source directory - The real directory which contains your medias.
+# | arg: -d, --dest_dir= - Destination directory - The name and the place of the symbolic link, relative to "/home/yunohost.multimedia"
 ynh_multimedia_addfolder () {
-	local source_dir="$1"
-	local dest_dir="$2"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [s]=source_dir= [d]=dest_dir= )
+	local source_dir
+	local dest_dir
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	./yunohost.multimedia-master/script/ynh_media_addfolder.sh --source="$source_dir" --dest="$dest_dir"
 }
 
@@ -37,13 +48,18 @@ ynh_multimedia_addfolder () {
 #
 # usage: ynh_multimedia_movefolder "Source directory" "Destination directory"
 #
-# | arg: Source directory - The real directory which contains your medias.
+# | arg: -s, --source_dir= - Source directory - The real directory which contains your medias.
 # It will be moved to "Destination directory"
 # A symbolic link will replace it.
-# | arg: Destination directory - The new name and place of the directory, relative to "/home/yunohost.multimedia"
+# | arg: -d, --dest_dir= - Destination directory - The new name and place of the directory, relative to "/home/yunohost.multimedia"
 ynh_multimedia_movefolder () {
-	local source_dir="$1"
-	local dest_dir="$2"
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [s]=source_dir= [d]=dest_dir= )
+	local source_dir
+	local dest_dir
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	./yunohost.multimedia-master/script/ynh_media_addfolder.sh --inv --source="$source_dir" --dest="$dest_dir"
 }
 
@@ -51,9 +67,14 @@ ynh_multimedia_movefolder () {
 #
 # usage: ynh_multimedia_addaccess user_name
 #
-# | arg: user_name - The name of the user which gain this access.
+# | arg: -u, --user_name= - The name of the user which gain this access.
 ynh_multimedia_addaccess () {
-	local user_name=$1
+	# Declare an array to define the options of this helper.
+	declare -Ar args_array=( [u]=user_name=)
+	local user_name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
 	groupadd -f multimedia
 	usermod -a -G multimedia $user_name
 }

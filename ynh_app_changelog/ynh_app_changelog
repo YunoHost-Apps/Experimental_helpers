@@ -1,0 +1,61 @@
+#!/bin/bash
+
+# Create a changelog for an app after an upgrade.
+#
+# The changelog is printed into the file ./changelog for the time of the upgrade.
+#
+# In order to create a changelog, ynh_app_changelog will get info from /etc/yunohost/apps/$app/status.json
+# In order to find the current commit use by the app.
+# The remote repository, and the branch.
+# The changelog will be only the commits since the current revision.
+#
+# Because of the need of those info, ynh_app_changelog works only
+# with apps that have been installed from a list.
+#
+# usage: ynh_app_changelog
+ynh_app_changelog () {
+	get_value_from_settings ()
+	{
+		local value="$1"
+		# Extract a value from the status.json file of an installed app.
+
+		grep "$value\": \"" /etc/yunohost/apps/$app/status.json | sed "s/.*$value\": \"\([^\"]*\).*/\1/"
+	}
+
+	local current_revision="$(get_value_from_settings revision)"
+	local repo="$(get_value_from_settings url)"
+	local branch="$(get_value_from_settings branch)"
+	# ynh_app_changelog works only with an app installed from a list.
+	if [ -z "$current_revision" ] || [ -z "$repo" ] || [ -z "$branch" ]
+	then
+		ynh_print_warn "Unable to build the changelog..."
+		touch changelog
+		return 0
+	fi
+
+	# Fetch the history of the repository, without cloning it
+	mkdir git_history
+	(cd git_history
+	ynh_exec_warn_less git init
+	ynh_exec_warn_less git remote add -f origin $repo
+	# Get the line of the current commit of the installed app in the history.
+	local line_to_head=$(git log origin/$branch --pretty=oneline | grep --line-number "$current_revision" | cut -d':' -f1)
+	# Cut the history before the current commit, to keep only newer commits.
+	# Then use sed to reorganise each lines and have a nice list of commits since the last upgrade.
+	# This list is redirected into the file changelog
+	git log origin/$branch --pretty=oneline | head --lines=$(($line_to_head-1)) | sed 's/^\([[:alnum:]]*\)\(.*\)/*(\1) -> \2/g' > ../changelog)
+	# Remove 'Merge pull request' commits
+	sed -i '/Merge pull request #[[:digit:]]* from/d' changelog
+	# As well as conflict resolving commits
+	sed -i '/Merge branch .* into/d' changelog
+
+	# Get the value of admin_mail_html
+	admin_mail_html=$(ynh_app_setting_get $app admin_mail_html)
+	admin_mail_html="${admin_mail_html:-0}"
+
+	# If a html email is required. Apply html to the changelog.
+ 	if [ "$admin_mail_html" -eq 1 ]
+ 	then
+		sed -in-place "s@\*(\([[:alnum:]]*\)) -> \(.*\)@* __URL_TAG1__\2__URL_TAG2__${repo}/commit/\1__URL_TAG3__@g" changelog
+ 	fi
+}
