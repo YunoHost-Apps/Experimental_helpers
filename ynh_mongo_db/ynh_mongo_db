@@ -17,8 +17,8 @@ ynh_mongo_setup_db() {
 ynh_mongo_remove_db() {
   local db_user="$1"
   local db_name="$2"
-  mongo --shell "$dbname" --eval 'db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})' <<< exit
-  mongo --shell "$dbname" --eval 'db.runCommand({dropDatabase: 1})' <<< exit
+  mongo --shell "$db_name" --eval 'db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})' <<< exit
+  mongo --shell "$db_name" --eval 'db.runCommand({dropDatabase: 1})' <<< exit
 }
 
 ynh_mongo_dump_db() {
