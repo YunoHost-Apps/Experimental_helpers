@@ -26,5 +26,5 @@ ynh_mongo_dump_db() {
   date_today=$(date +"%m-%d-%y")
   mkdir -p /var/backups/mongobackups/
   find /var/backups/mongobackups/ -mtime +7 -exec rm -rf {} \;
-  mongodump --db $db_name --out /var/backups/mongobackups/$date_today
+  mongodump --db "$db_name" --out /var/backups/mongobackups/$date_today
 }
