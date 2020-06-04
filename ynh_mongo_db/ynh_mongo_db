@@ -119,6 +119,19 @@ ynh_mongo_dump_db() {
     mongodump --quiet --db="$database" --archive
 }
 
+# Create a user
+#
+# [internal]
+#
+# usage: ynh_mongo_create_user user pwd [host]
+# | arg: user - the user name to create
+# | arg: pwd - the password to identify user by
+#
+# Requires YunoHost version 2.2.4 or higher.
+ynh_mongo_create_user() {
+    ynh_mongo_eval_as --command='db.createUser( { user: "'${1}'", pwd: "'${2}'", roles: [ "readWrite" ] } );'
+}
+
 # Restore a database
 #
 # example: ynh_mongo_restore_db --database=wekan < ./dump.bson
