@@ -72,7 +72,7 @@ ynh_mongo_eval_as() {
 # | arg: db_user - the user to grant privilegies
 # | arg: db_pwd - the password to identify user by
 #
-# Requires YunoHost version 2.2.4 or higher.
+#
 ynh_mongo_create_db() {
     local db_name=$1
     local db_user=$2
@@ -127,7 +127,7 @@ ynh_mongo_dump_db() {
 # | arg: user - the user name to create
 # | arg: pwd - the password to identify user by
 #
-# Requires YunoHost version 2.2.4 or higher.
+#
 ynh_mongo_create_user() {
     ynh_mongo_eval_as --command='db.createUser( { user: "'${1}'", pwd: "'${2}'", roles: [ "readWrite" ] } );'
 }
