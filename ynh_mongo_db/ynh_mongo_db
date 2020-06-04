@@ -103,8 +103,8 @@ ynh_mongo_remove_db() {
     ynh_handle_getopts_args "$@"
 
     mongo --shell "$db_name" --eval 'db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})' <<< exit
-    
-    if [ $(mongo --eval 'db.getMongo().getDBNames().indexOf("$db_name")' --quiet) -lt 0 ]
+
+    if [ $(mongo --eval 'db.getMongo().getDBNames().indexOf("'${db_name}'")' --quiet) -lt 0 ]
     then
         ynh_print_warn --message="Database $db_name not found"
     else
