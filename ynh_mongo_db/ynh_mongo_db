@@ -2,23 +2,23 @@
 
 # Dump a database
 #
-# example: ynh_mongo_dump_db --database=wekan --outdir="./dump"
+# example: ynh_mongo_dump_db --database=wekan > ./dump.bson
 #
-# usage: ynh_mongo_dump_db --database=database [--outdir=outdir]
+# usage: ynh_mongo_dump_db --database=database
 # | arg: -d, --database=    - the database name to dump
-# | arg: -o, --outdir=    - the directory where the dump will be saved. If not provided, will be in ./dump
+# | ret: the mongodump output
 #
 #
 ynh_mongo_dump_db() {
     # Declare an array to define the options of this helper.
-    local legacy_args=do
-    local -A args_array=( [d]=database= [o]=outdir= )
+    # Declare an array to define the options of this helper.
+    local legacy_args=d
+    local -A args_array=( [d]=database= )
     local database
-    local outdir
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
-    mongodump --quiet --db="$database" --out="$outdir"
+    mongodump --quiet --db="$database" --archive
 }
 
 # Create a database, an user and its password. Then store the password in the app's config
