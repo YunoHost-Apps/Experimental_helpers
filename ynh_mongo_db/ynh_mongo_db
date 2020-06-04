@@ -1,5 +1,20 @@
 #!/bin/bash
 
+# Drop a database
+#
+# [internal]
+#
+# If you intend to drop the database *and* the associated user,
+# consider using ynh_mongo_remove_db instead.
+#
+# usage: ynh_mongo_drop_db db
+# | arg: db - the database name to drop
+#
+#
+ynh_mongo_drop_db() {
+    mongo --shell "${1}" --eval 'db.runCommand({dropDatabase: 1})' <<< exit
+}
+
 # Dump a database
 #
 # example: ynh_mongo_dump_db --database=wekan > ./dump.bson
@@ -88,5 +103,11 @@ ynh_mongo_remove_db() {
     ynh_handle_getopts_args "$@"
 
     mongo --shell "$db_name" --eval 'db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})' <<< exit
-    mongo --shell "$db_name" --eval 'db.runCommand({dropDatabase: 1})' <<< exit
+    
+    if [ $(mongo --eval 'db.getMongo().getDBNames().indexOf("$db_name")' --quiet) -lt 0 ]
+    then
+        ynh_print_warn --message="Database $db_name not found"
+    else
+        ynh_mongo_drop_db $db_name  # Remove the database
+    fi
 }
