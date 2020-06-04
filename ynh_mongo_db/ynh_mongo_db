@@ -174,6 +174,18 @@ ynh_mongo_restore_db() {
     mongorestore --quiet --db="$database" --archive
 }
 
+# Drop a user
+#
+# [internal]
+#
+# usage: ynh_mongo_drop_user user
+# | arg: user - the user name to drop
+#
+#
+ynh_mongo_drop_user() {
+    ynh_mongo_eval_as --command='db.dropUser("'${1}'", {w: "majority", wtimeout: 5000})'
+}
+
 # Create a database, an user and its password. Then store the password in the app's config
 #
 # usage: ynh_mongo_setup_db --db_user=user --db_name=name [--db_pwd=pwd]
@@ -226,6 +238,6 @@ ynh_mongo_remove_db() {
         ynh_print_warn --message="Database $db_name not found"
     fi
 
-    # Remove psql user if it exists
-    ynh_mongo_eval_as --database="$db_name" --command='db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})'
+    # Remove mongo user if it exists
+    ynh_mongo_drop_user $db_user
 }
