@@ -132,6 +132,29 @@ ynh_mongo_create_user() {
     ynh_mongo_eval_as --command='db.createUser( { user: "'${1}'", pwd: "'${2}'", roles: [ "readWrite" ] } );'
 }
 
+# Check if a mongo database exists
+#
+# usage: ynh_mongo_database_exists --database=database
+# | arg: -d, --database=    - the database for which to check existence
+# | exit: Return 1 if the database doesn't exist, 0 otherwise
+#
+#
+ynh_mongo_database_exists() {
+    # Declare an array to define the options of this helper.
+    local legacy_args=d
+    local -A args_array=([d]=database=)
+    local database
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+
+    if [ $(ynh_mongo_eval_as --command='db.getMongo().getDBNames().indexOf("'${database}'")') -lt 0 ]
+    then
+        return 0
+    else
+        return 1
+    fi
+}
+
 # Restore a database
 #
 # example: ynh_mongo_restore_db --database=wekan < ./dump.bson
@@ -196,12 +219,13 @@ ynh_mongo_remove_db() {
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
-    ynh_mongo_eval_as --database="$db_name" --command='db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})'
-
-    if [ $(ynh_mongo_eval_as --command='db.getMongo().getDBNames().indexOf("'${db_name}'")') -lt 0 ]
-    then
-        ynh_print_warn --message="Database $db_name not found"
-    else
+    if ynh_mongo_database_exists  --database=$db_name
+    then # Check if the database exists
         ynh_mongo_drop_db $db_name  # Remove the database
+    else
+        ynh_print_warn --message="Database $db_name not found"
     fi
+
+    # Remove psql user if it exists
+    ynh_mongo_eval_as --database="$db_name" --command='db.dropUser("'${dbuser}'", {w: "majority", wtimeout: 5000})'
 }
