@@ -40,17 +40,9 @@ ynh_add_config () {
     local vars
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
-    local origin="${origin:-}"
-    local destination="${destination:-}"
+    local origin="${origin:-"../conf/.env"}"
+    local destination="${destination:-"$final_path/.env"}"
     local vars="${vars:-}"
-
-    # The default behaviour is to use .env file.
-    if [ -n "$origin" ]; then
-        origin="../conf/.env"
-    fi
-    if [ -n "$destination" ]; then
-        destination="final_path/.env"
-    fi
 
     ynh_backup_if_checksum_is_different --file="$destination"
     cp "$origin" "$destination"
