@@ -52,8 +52,8 @@ ynh_add_config () {
     then
         # path_url_slash_less is path_url, or a blank value if path_url is only '/'
         local path_url_slash_less=${path_url%/}
-        ynh_replace_string --match_string="__PATH__/" --replace_string="$path_url_slash_less/" --target_file="$finalnginxconf"
-        ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finalnginxconf"
+        ynh_replace_string --match_string="__PATH__/" --replace_string="$path_url_slash_less/" --target_file="$destination"
+        ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$destination"
     fi
     if test -n "${domain:-}"; then
         ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$destination"
