@@ -11,7 +11,7 @@
 # to generate a config file $destination or $final_path/.env by default,
 # by replacing the following keywords with global variables
 # that should be defined before calling this helper :
-#
+#   __PATH__      by  $path_url
 #   __DOMAIN__    by $domain
 #   __PORT__    by $port
 #   __NAME__    by $app
@@ -48,6 +48,13 @@ ynh_add_config () {
     cp "$origin" "$destination"
 
     #Replace usual YunoHost variables
+    if test -n "${path_url:-}"
+    then
+        # path_url_slash_less is path_url, or a blank value if path_url is only '/'
+        local path_url_slash_less=${path_url%/}
+        ynh_replace_string --match_string="__PATH__/" --replace_string="$path_url_slash_less/" --target_file="$finalnginxconf"
+        ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finalnginxconf"
+    fi
     if test -n "${domain:-}"; then
         ynh_replace_string --match_string="__DOMAIN__" --replace_string="$domain" --target_file="$destination"
     fi
