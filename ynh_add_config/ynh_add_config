@@ -33,6 +33,10 @@
 #   __VAR_1__    by $var_1
 #   __VAR_2__    by $var_2
 #
+# The helper will verify the checksum and backup the destination file
+# if it's different before applying the new origin file.
+# And it will calculate and store a destination file checksum
+# into the app settings when configuraation is done.
 #
 ynh_add_config () {
     # Declare an array to define the options of this helper.
