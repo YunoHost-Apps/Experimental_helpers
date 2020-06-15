@@ -25,6 +25,9 @@
 #   __YNH_NODE_LOAD_PATH__    by $ynh_node_load_PATH
 #   __NODEJS_PATH__    by $nodejs_path
 #   __NODEJS_VERSION__    by $nodejs_version
+#   __DB_NAME__    by $db_name
+#   __DB_USER__    by $db_user
+#   __DB_PWD__    by $db_pwd
 #
 # And dynamic variables (from the last example) :
 #   __VAR_1__    by $var_1
@@ -87,6 +90,15 @@ ynh_add_config () {
     fi
     if test -n "${nodejs_version:-}"; then
         ynh_replace_string --match_string="__NODEJS_VERSION__" --replace_string="$nodejs_version" --target_file="$destination"
+    fi
+    if test -n "${db_name:-}"; then
+        ynh_replace_string --match_string="__DB_NAME__" --replace_string="$db_name" --target_file="$destination"
+    fi
+    if test -n "${db_user:-}"; then
+        ynh_replace_string --match_string="__DB_USER__" --replace_string="$db_user" --target_file="$destination"
+    fi
+    if test -n "${db_pwd:-}"; then
+        ynh_replace_string --match_string="__DB_PWD__" --replace_string="$db_pwd" --target_file="$destination"
     fi
 
     # Replace all other variables given as arguments
