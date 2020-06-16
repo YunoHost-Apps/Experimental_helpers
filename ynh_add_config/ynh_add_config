@@ -118,7 +118,7 @@ ynh_remove_config () {
 #
 ynh_replace_vars () {
     # Declare an array to define the options of this helper.
-    local legacy_args=odv
+    local legacy_args=fv
     local -A args_array=( [f]=file= [v]=vars= )
     local file
     local vars
