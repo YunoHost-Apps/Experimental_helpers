@@ -70,7 +70,7 @@ ynh_remove_config () {
     local file
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
-    local service="${file:-}"
+    local file="${file:-}"
 
     # The default behaviour is to use .env file.
     if [ -n "$file" ]; then
