@@ -92,12 +92,18 @@ ynh_mongo_create_db() {
 # If you intend to drop the database *and* the associated user,
 # consider using ynh_mongo_remove_db instead.
 #
-# usage: ynh_mongo_drop_db db
-# | arg: db - the database name to drop
+# usage: ynh_mongo_drop_db -database=db
+# | arg: -d, --database=    - the database name to drop
 #
 #
 ynh_mongo_drop_db() {
-    ynh_mongo_eval_as --database="${1}" --command='db.runCommand({dropDatabase: 1})'
+    local legacy_args=d
+    local -A args_array=( [d]=database= )
+    local database
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+
+    ynh_mongo_eval_as --database="${database}" --command='db.runCommand({dropDatabase: 1})'
 }
 
 # Dump a database
@@ -243,7 +249,7 @@ ynh_mongo_remove_db() {
 
     if ynh_mongo_database_exists --database=$db_name
     then # Check if the database exists
-        ynh_mongo_drop_db $db_name  # Remove the database
+        ynh_mongo_drop_db --database="$db_name"  # Remove the database
     else
         ynh_print_warn --message="Database $db_name not found"
     fi
