@@ -2,13 +2,13 @@
 
 # Create a dedicated config file from a template
 #
-# usage: ynh_add_config [--template="template"] [--destination="destination file"] [--vars="vars to replace"]
-# | arg: -t, --template=     - Template config file to use (optionnal, ../conf/.env by default)
-# | arg: -d, --destination=    - Destination of the config file (optionnal, $final_path/.env)
+# usage: ynh_add_config --template="template" --destination="destination file" [--vars="vars to replace"]
+# | arg: -t, --template=     - Template config file to use
+# | arg: -d, --destination=    - Destination of the config file
 # | arg: -v, --vars=  - List of variables to replace separated by a space. For example: 'var_1 var_2 ...'
 #
-# This will use the template $template or ../conf/.env by default
-# to generate a config file $destination or $final_path/.env by default,
+# This will use the template $template 
+# to generate a config file $destination
 # by replacing the following keywords with global variables
 # that should be defined before calling this helper :
 #   __PATH__      by  $path_url
@@ -47,8 +47,6 @@ ynh_add_config () {
     local vars
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
-    local template="${template:-"../conf/.env"}"
-    local destination="${destination:-"$final_path/.env"}"
     local vars="${vars:-}"
 
     ynh_backup_if_checksum_is_different --file="$destination"
