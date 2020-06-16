@@ -81,8 +81,6 @@ ynh_mongo_create_db() {
     local db_name=$1
     local db_user=$2
 
-    # Set the user as admin of the db
-    ynh_mongo_eval_as --database="$db_name" --command='db.grantRolesToUser("'${db_user}'",[{ role: "clusterMonitor", db: "admin" }]);'
 }
 
 # Drop a database
@@ -130,13 +128,27 @@ ynh_mongo_dump_db() {
 #
 # [internal]
 #
-# usage: ynh_mongo_create_user user pwd [host]
-# | arg: user - the user name to create
-# | arg: pwd - the password to identify user by
+# usage: ynh_mongo_create_user --db_user=db_user --db_pwd=db_pwd --db_name=db_name
+# | arg: -u, --db_user=    - the user name to create
+# | arg: -p, --db_pwd=     - the password to identify user by
+# | arg: -n, --db_name=     - Name of the database to grant privilegies
 #
 #
 ynh_mongo_create_user() {
-    ynh_mongo_eval_as --command='db.createUser( { user: "'${1}'", pwd: "'${2}'", roles: [ "readWrite" ] } );'
+    # Declare an array to define the options of this helper.
+    local legacy_args=unp
+    local -A args_array=( [u]=db_user= [n]=db_name= [p]=db_pwd= )
+    local db_user
+    local db_name
+    local db_pwd
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+
+    # Create the user
+    ynh_mongo_eval_as --command='db.createUser( { user: "'${db_user}'", pwd: "'${db_pwd}'", roles: [ { role: "readWrite", db: "'${db_name}'" } ] } );'
+    
+    # Set the user as admin of the db
+    ynh_mongo_eval_as --database="$db_name" --command='db.grantRolesToUser("'${db_user}'",[{ role: "clusterMonitor", db: "admin" }]);'
 }
 
 # Check if a mongo database exists
@@ -225,10 +237,10 @@ ynh_mongo_setup_db() {
     # If $db_pwd is not provided, use new_db_pwd instead for db_pwd
     db_pwd="${db_pwd:-$new_db_pwd}"
     
-    ynh_mongo_create_user "$db_user" "$db_pwd"  # Create the user
+    # Create the user and grant access to the database
+    ynh_mongo_create_user --db_user="$db_user" --db_pwd="$db_pwd" --db_name="$db_name"
     
-    ynh_mongo_create_db "$db_name" "$db_user"	# Create the database
-    ynh_app_setting_set --app=$app --key=mongopwd --value=$db_pwd # Store the password in the app's config
+    ynh_app_setting_set --app=$app --key=mongopwd --value=$db_pwd 
 }
 
 # Remove a database if it exists, and the associated user
