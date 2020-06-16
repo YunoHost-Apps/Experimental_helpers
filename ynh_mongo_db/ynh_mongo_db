@@ -9,16 +9,21 @@
 # | arg: -u, --user=        - the user name to connect as
 # | arg: -p, --password=    - the user password
 # | arg: -d, --database=    - the database to connect to
-# | arg: -c, --command=    - the command to evaluate
+# | arg: -h, --host=        - the host to connect to
+# | arg: -P, --port=        - the port to connect to
+# | arg: -c, --command=     - the command to evaluate
 #
 #
 ynh_mongo_eval_as() {
     # Declare an array to define the options of this helper.
-    local legacy_args=updc
-    local -A args_array=( [u]=user= [p]=password= [d]=database= [c]=command= )
+    local legacy_args=updhPc
+    local -A args_array=( [u]=user= [p]=password= [d]=database= [h]=host= [P]=port= [c]=command= )
     local user
     local password
     local database
+    local host
+    local port
+    local command
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
     user="${user:-}"
