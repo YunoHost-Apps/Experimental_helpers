@@ -204,7 +204,7 @@ ynh_mongo_setup_db() {
     local -A args_array=( [u]=db_user= [n]=db_name= [p]=db_pwd= )
     local db_user
     local db_name
-    db_pwd=""
+    local db_pwd
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
