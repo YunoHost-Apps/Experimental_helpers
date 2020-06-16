@@ -202,7 +202,7 @@ ynh_mongo_restore_db() {
 #
 ynh_mongo_drop_user() {
     # Declare an array to define the options of this helper.
-    local legacy_args=unp
+    local legacy_args=u
     local -A args_array=( [u]=db_user= )
     local db_user
     # Manage arguments with getopts
