@@ -68,13 +68,12 @@ ynh_mongo_eval_as() {
     mongo --quiet $user $password $database $host $port --eval="$command"
 }
 
-# Create a database and grant optionnaly privilegies to a user
+# Create a database 
 #
 # [internal]
 #
-# usage: ynh_mongo_create_db db_name [db_user]
+# usage: ynh_mongo_create_db db_name
 # | arg: db_name - the database name to create
-# | arg: db_user - the user to grant privilegies
 #
 #
 ynh_mongo_create_db() {
@@ -239,7 +238,7 @@ ynh_mongo_setup_db() {
     
     # Create the user and grant access to the database
     ynh_mongo_create_user --db_user="$db_user" --db_pwd="$db_pwd" --db_name="$db_name"
-    
+
     ynh_app_setting_set --app=$app --key=db_pwd --value=$db_pwd 
 }
 
