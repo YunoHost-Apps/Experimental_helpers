@@ -71,16 +71,16 @@ ynh_add_config () {
 #
 # The helper will replace the following keywords with global variables
 # that should be defined before calling this helper :
-#   __PATH__      by  $path_url
-#   __NAME__    by $app
+#   __PATH__             by  $path_url
+#   __NAME__            by $app
 #   __NAMETOCHANGE__    by $app
-#   __USER__    by $app
-#   __FINALPATH__    by $final_path
-#   __PHPVERSION__    by $YNH_PHP_VERSION
+#   __USER__            by $app
+#   __FINALPATH__       by $final_path
+#   __PHPVERSION__      by $YNH_PHP_VERSION
 #
 # And any dynamic variables that should be defined before calling this helper like:
-#   __DOMAIN__    by $domain
-#   __APP__    by $app
+#   __DOMAIN__   by $domain
+#   __APP__      by $app
 #   __VAR_1__    by $var_1
 #   __VAR_2__    by $var_2
 #
