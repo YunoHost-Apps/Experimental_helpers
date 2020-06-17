@@ -95,15 +95,20 @@ ynh_replace_vars () {
     fi
 
     # Replace othes variables
-    
+
     # List other unique (__ __) variables in $file
     local uniques_vars=( $(grep -o '__[^.]*__' $file | sort --unique | sed "s@__\([^.]*\)__@\L\1@g" ))
 
     # Do the replacement
+    local delimit=@
     for one_var in "${uniques_vars[@]}"
     do
         if test -n "${!one_var:-}"; then
-            ynh_replace_string --match_string="__${one_var^^}__" --replace_string="${!one_var}" --target_file="$file"
+            match_string="__${one_var^^}__"
+            match_string=${match_string//${delimit}/"\\${delimit}"}
+            replace_string="${!one_var}"
+            replace_string=${replace_string//${delimit}/"\\${delimit}"}
+            sed --in-place "s${delimit}${match_string}${delimit}${replace_string}${delimit}g" "$file"
         else
             ynh_die --message="\$$one_var wasn't initialized when trying to replace __${one_var^^}__ in $file"
         fi
