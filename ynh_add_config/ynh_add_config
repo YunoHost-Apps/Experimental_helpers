@@ -2,11 +2,18 @@
 
 # Create a dedicated config file from a template
 #
-# usage: ynh_add_config --template="template" --destination="destination file"
+# examples: 
+#    ynh_add_config --template=".env" --destination="$final_path/.env"
+#    ynh_add_config --template="../conf/.env" --destination="$final_path/.env"
+#    ynh_add_config --template="/etc/nginx/sites-available/default" --destination="etc/nginx/sites-available/mydomain.conf"
+#
+# usage: ynh_add_config --template="template" --destination="destination"
 # | arg: -t, --template=     - Template config file to use
 # | arg: -d, --destination=    - Destination of the config file
 #
-# This will use the template $template to generate a config file
+# The template can be by default the name of a file in the conf directory
+# of a YunoHost Package, a relative path or an absolute path
+# The helper will use the template $template to generate a config file
 # $destination by replacing the following keywords with global variables
 # that should be defined before calling this helper :
 #   __PATH__      by  $path_url
@@ -24,8 +31,9 @@
 #
 # The helper will verify the checksum and backup the destination file
 # if it's different before applying the new template.
-# And it will calculate and store a destination file checksum
-# into the app settings when configuraation is done.
+# And it will calculate and store the destination file checksum
+# into the app settings when configuration is done.
+#
 #
 ynh_add_config () {
     # Declare an array to define the options of this helper.
@@ -35,10 +43,21 @@ ynh_add_config () {
     local destination
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
+    local template_path
+
+    if [ -f "../conf/$template" ]; then
+        template_path="../conf/$template"
+    elif [ -f "../settings/conf/$template" ]; then
+        template_path="../settings/conf/$template"
+    elif [ -f "$template" ]; then
+        template_path=$template
+    else
+        ynh_die --message="The provided template $template doesn't exist"
+    fi
 
     ynh_backup_if_checksum_is_different --file="$destination"
 
-    cp "$template" "$destination"
+    cp "$template_path" "$destination"
 
     ynh_replace_vars --file="$destination"
 
