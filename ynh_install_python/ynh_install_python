@@ -56,7 +56,7 @@ fi
 #
 # usage: ynh_install_python python_version user
 # | arg: -v, --python_version= - Version of python to install.
-#        If possible, prefer to use major version number (e.g. 8 instead of 8.10.0).
+#        If possible, prefer to use major version number (e.g. 3 instead of 3.7.3).
 #        The crontab will handle the update of minor versions when needed.
 ynh_install_python () {
   # Declare an array to define the options of this helper.
