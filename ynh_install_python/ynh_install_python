@@ -84,7 +84,7 @@ ynh_install_python () {
   elif dpkg --compare-versions "$($pyenv_install_dir/bin/pyenv --version | cut -d" " -f2)" lt "1.2.19"
   then
     ynh_install_pyenv
-  elif dpkg --compare-versions "$($pyenv_install_dir/plugins/pyenv-virtualenv/bin/pyenv-virtualenv --version | cut -d" " -f2)" lt "1.1.5"
+  elif dpkg --compare-versions "$($pyenv_install_dir/plugins/pyenv-virtualenv/bin/pyenv-virtualenv --version | cut -d" " -f2)" lt $pyenv-virtualenv_version
   then
     ynh_install_pyenv
   fi
