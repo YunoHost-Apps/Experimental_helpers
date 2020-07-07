@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
-
+pyenv_version=1.2.19
+pyenv-virtualenv_version=1.1.5
 pyenv_install_dir="/opt/pyenv"
 # PYENV_ROOT is the directory of pyenv, it needs to be loaded as a environment variable.
 export PYENV_ROOT="$pyenv_install_dir"
