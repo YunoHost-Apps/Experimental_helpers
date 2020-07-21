@@ -128,8 +128,8 @@ ynh_mongo_dump_db() {
 # [internal]
 #
 # usage: ynh_mongo_create_user --db_user=db_user --db_pwd=db_pwd --db_name=db_name
-# | arg: -u, --db_user=    - the user name to create
-# | arg: -p, --db_pwd=     - the password to identify user by
+# | arg: -u, --db_user=    - The user name to create
+# | arg: -p, --db_pwd=     - The password to identify user by
 # | arg: -n, --db_name=     - Name of the database to grant privilegies
 #
 #
