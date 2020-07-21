@@ -73,7 +73,7 @@ EOF
 # [internal]
 #
 # usage: ynh_mongo_create_db db_name
-# | arg: db_name - the database name to create
+# | arg: db_name    - The database name to create
 #
 #
 ynh_mongo_create_db() {
