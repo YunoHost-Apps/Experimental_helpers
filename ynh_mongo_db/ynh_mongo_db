@@ -108,7 +108,7 @@ ynh_mongo_drop_db() {
 # example: ynh_mongo_dump_db --database=wekan > ./dump.bson
 #
 # usage: ynh_mongo_dump_db --database=db_name
-# | arg: -d, --database=    - the database name to dump
+# | arg: -d, --database=    - The database name to dump
 # | ret: the mongodump output
 #
 #
