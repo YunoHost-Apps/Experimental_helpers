@@ -6,13 +6,13 @@
 # example: ynh_mongo_exec_as --command="db.getMongo().getDBNames().indexOf(\"wekan\")"
 #
 # usage: ynh_mongo_exec_as [--user=user] [--password=password] [--authenticationdatabase=authenticationdatabase] [--database=database] [--host=host] [--port=port] --command="command"
-# | arg: -u, --user=                      - the user name to connect as
-# | arg: -p, --password=                  - the user password
-# | arg: -d, --authenticationdatabase=    - the authenticationdatabase to connect to
-# | arg: -d, --database=                  - the database to connect to
-# | arg: -h, --host=                      - the host to connect to
-# | arg: -P, --port=                      - the port to connect to
-# | arg: -c, --command=                   - the command to evaluate
+# | arg: -u, --user=                      - The user name to connect as
+# | arg: -p, --password=                  - The user password
+# | arg: -d, --authenticationdatabase=    - The authenticationdatabase to connect to
+# | arg: -d, --database=                  - The database to connect to
+# | arg: -h, --host=                      - The host to connect to
+# | arg: -P, --port=                      - The port to connect to
+# | arg: -c, --command=                   - The command to evaluate
 #
 #
 ynh_mongo_exec_as() {
