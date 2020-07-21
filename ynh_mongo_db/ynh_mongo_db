@@ -90,7 +90,7 @@ ynh_mongo_create_db() {
 # consider using ynh_mongo_remove_db instead.
 #
 # usage: ynh_mongo_drop_db -database=db_name
-# | arg: -d, --database=    - the database name to drop
+# | arg: -d, --database=    - The database name to drop
 #
 #
 ynh_mongo_drop_db() {
