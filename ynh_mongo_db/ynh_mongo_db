@@ -244,7 +244,7 @@ ynh_mongo_setup_db() {
 
 # Remove a database if it exists, and the associated user
 #
-# usage: ynh_mongo_remove_db --db_user=user --db_name=name
+# usage: ynh_mongo_remove_db --db_user=db_user --db_name=db_name
 # | arg: -u, --db_user=     - Owner of the database
 # | arg: -n, --db_name=     - Name of the database
 #
