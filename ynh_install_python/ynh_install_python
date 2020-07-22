@@ -2,7 +2,7 @@
 
 # Need also the helper https://github.com/YunoHost-Apps/Experimental_helpers/blob/master/ynh_handle_getopts_args/ynh_handle_getopts_args
 pyenv_version=1.2.19
-pyenv-virtualenv_version=1.1.5
+pyenv_virtualenv_version=1.1.5
 pyenv_install_dir="/opt/pyenv"
 
 # PYENV_ROOT is the directory of pyenv, it needs to be loaded as a environment variable.
@@ -27,7 +27,7 @@ SOURCE_SUM=e93466735ac9c34d68b7d5d71f32c16a2b4b1a6a1adffb85acc4126a3398b9d0" > "
 
   # Build an app.src for pyenv-virtualenv
   mkdir -p "../conf"
-  echo "SOURCE_URL=https://github.com/pyenv/pyenv-virtualenv/archive/v${pyenv-virtualenv_version}.tar.gz
+  echo "SOURCE_URL=https://github.com/pyenv/pyenv-virtualenv/archive/v${pyenv_virtualenv_version}.tar.gz
 SOURCE_SUM=27ae3de027a6f6dccdca4085225512e559c6b94b31625bd2b357a18890a1e618" > "../conf/pyenv-virtualenv.src"
   # Download and extract pyenv-virtualenv
   ynh_setup_source "$pyenv_install_dir/plugins/pyenv-virtualenv" pyenv-virtualenv
@@ -87,7 +87,7 @@ ynh_install_python () {
   elif dpkg --compare-versions "$($pyenv_install_dir/bin/pyenv --version | cut -d" " -f2)" lt $pyenv_version
   then
     ynh_install_pyenv
-  elif dpkg --compare-versions "$($pyenv_install_dir/plugins/pyenv-virtualenv/bin/pyenv-virtualenv --version | cut -d" " -f2)" lt $pyenv-virtualenv_version
+  elif dpkg --compare-versions "$($pyenv_install_dir/plugins/pyenv-virtualenv/bin/pyenv-virtualenv --version | cut -d" " -f2)" lt $pyenv_virtualenv_version
   then
     ynh_install_pyenv
   fi
