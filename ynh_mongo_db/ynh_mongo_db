@@ -13,10 +13,10 @@ MONGO_KEY_BUSTER="https://www.mongodb.org/static/pgp/server-4.2.asc"
 
 # Execute a mongo command
 #
-# example: ynh_mongo_exec_as --command='db.getMongo().getDBNames().indexOf("wekan")'
-# example: ynh_mongo_exec_as --command="db.getMongo().getDBNames().indexOf(\"wekan\")"
+# example: ynh_mongo_exec --command='db.getMongo().getDBNames().indexOf("wekan")'
+# example: ynh_mongo_exec --command="db.getMongo().getDBNames().indexOf(\"wekan\")"
 #
-# usage: ynh_mongo_exec_as [--user=user] [--password=password] [--authenticationdatabase=authenticationdatabase] [--database=database] [--host=host] [--port=port] --command="command" [--eval]
+# usage: ynh_mongo_exec [--user=user] [--password=password] [--authenticationdatabase=authenticationdatabase] [--database=database] [--host=host] [--port=port] --command="command" [--eval]
 # | arg: -u, --user=                      - The user name to connect as
 # | arg: -p, --password=                  - The user password
 # | arg: -d, --authenticationdatabase=    - The authenticationdatabase to connect to
@@ -27,7 +27,7 @@ MONGO_KEY_BUSTER="https://www.mongodb.org/static/pgp/server-4.2.asc"
 # | arg: -e, --eval                       - Evaluate instead of execute the command.
 #
 #
-ynh_mongo_exec_as() {
+ynh_mongo_exec() {
     # Declare an array to define the options of this helper.
     local legacy_args=upadhPce
     local -A args_array=( [u]=user= [p]=password= [a]=authenticationdatabase= [d]=database= [h]=host= [P]=port= [c]=command= [e]=eval )
