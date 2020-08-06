@@ -153,9 +153,9 @@ ynh_mongo_database_exists() {
 
     if [ $(ynh_mongo_exec_as --command='db.getMongo().getDBNames().indexOf("'${database}'")') -lt 0 ]
     then
-        return 0
-    else
         return 1
+    else
+        return 0
     fi
 }
 
