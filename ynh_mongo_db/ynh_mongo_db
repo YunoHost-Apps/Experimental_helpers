@@ -146,7 +146,7 @@ ynh_mongo_exec_as_root() {
 # consider using ynh_mongo_remove_db instead.
 #
 # usage: ynh_mongo_drop_db --database=database
-# | arg: -d, --database=    - the database name to dump
+# | arg: -d, --database=    - The database name to drop
 #
 #
 ynh_mongo_drop_db() {
@@ -185,9 +185,9 @@ ynh_mongo_dump_db() {
 # [internal]
 #
 # usage: ynh_mongo_create_user --db_user=user --db_pwd=pwd --db_name=name
-# | arg: -u, --db_user= - the user to grant privilegies
-# | arg: -p, --db_pwd= - the password to identify user by
-# | arg: -n, --db_name=- the database name to grant privilegies
+# | arg: -u, --db_user=    - The user name to create
+# | arg: -p, --db_pwd=     - The password to identify user by
+# | arg: -n, --db_name=    - Name of the database to grant privilegies
 #
 #
 ynh_mongo_create_user() {
