@@ -29,8 +29,8 @@ MONGO_KEY_BUSTER="https://www.mongodb.org/static/pgp/server-4.2.asc"
 #
 ynh_mongo_exec_as() {
     # Declare an array to define the options of this helper.
-    local legacy_args=upadhPc
-    local -A args_array=( [u]=user= [p]=password= [a]=authenticationdatabase= [d]=database= [h]=host= [P]=port= [c]=command= [e]=eval)
+    local legacy_args=upadhPce
+    local -A args_array=( [u]=user= [p]=password= [a]=authenticationdatabase= [d]=database= [h]=host= [P]=port= [c]=command= [e]=eval )
     local user
     local password
     local authenticationdatabase
@@ -72,36 +72,44 @@ ynh_mongo_exec_as() {
         authenticationdatabase=""
     fi
 
-    # If database is provided
-    if [ -n "$database" ]
-    then
-        database="use $database"
-    else
-        database=""
-    fi
-
     # If host is provided
     if [ -n "$host" ]
     then
         host="--host=$host"
     fi
 
-    # If host is provided
+    # If port is provided
     if [ -n "$port" ]
     then
         port="--port=$port"
     fi
 
-    # If eval is provided
+    # If eval is not provided
     if [ $eval -eq 0 ]
     then
+        # If database is provided
+        if [ -n "$database" ]
+        then
+            database="use $database"
+        else
+            database=""
+        fi
+
         mongo --quiet $user $password $authenticationdatabase $host $port <<EOF
 $database
 ${command}
 quit()
 EOF
     else
-        mongo --quiet $user $password $authenticationdatabase $host $port --eval="$command"
+        # If database is provided
+        if [ -n "$database" ]
+        then
+            database="$database"
+        else
+            database=""
+        fi
+        
+        mongo --quiet $database $user $password $authenticationdatabase $host $port --eval="$command"
     fi
 
 }
