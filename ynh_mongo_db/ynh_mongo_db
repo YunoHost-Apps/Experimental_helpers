@@ -40,7 +40,6 @@ ynh_mongo_exec_as() {
     local port
     local command
     local eval
-
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
     user="${user:-}"
