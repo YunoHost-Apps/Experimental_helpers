@@ -303,7 +303,7 @@ ynh_mongo_remove_db() {
 
 # Install MongoDB and integrate MongoDB service in YunoHost
 #
-# usage: ynh_mongo_install
+# usage: ynh_install_mongo
 #
 #
 ynh_install_mongo() {
@@ -329,7 +329,7 @@ ynh_install_mongo() {
 # Only remove the MongoDB service integration in YunoHost for now
 # if MongoDB package as been removed
 #
-# usage: ynh_mongo_remove
+# usage: ynh_remove_mongo
 #
 #
 ynh_remove_mongo() {
