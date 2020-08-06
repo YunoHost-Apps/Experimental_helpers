@@ -301,7 +301,7 @@ ynh_mongo_remove_db() {
     ynh_mongo_drop_user --db_user=$db_user --db_name=$db_name
 }
 
-# Install MongoDB and intregrate MongoDB service in YunoHost
+# Install MongoDB and integrate MongoDB service in YunoHost
 #
 # usage: ynh_mongo_install
 #
