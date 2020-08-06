@@ -182,19 +182,21 @@ ynh_mongo_restore_db() {
 #
 # [internal]
 #
-# usage: ynh_mongo_drop_user --db_user=user
+# usage: ynh_mongo_drop_user --db_user=user --db_name=name
 # | arg: -u, --db_user=     - The user to drop
+# | arg: -n, --db_name=     - Name of the database
 #
 #
 ynh_mongo_drop_user() {
     # Declare an array to define the options of this helper.
-    local legacy_args=u
+    local legacy_args=un
     local -A args_array=( [u]=db_user= )
     local db_user
+    local db_name
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
-    ynh_mongo_exec_as --command='db.dropUser("'$db_user'", {w: "majority", wtimeout: 5000})'
+    ynh_mongo_exec_as --database="$db_name" --command='db.dropUser("'$db_user'", {w: "majority", wtimeout: 5000})'
 }
 
 # Create a database, an user and its password. Then store the password in the app's config
@@ -252,5 +254,5 @@ ynh_mongo_remove_db() {
     fi
 
     # Remove mongo user if it exists
-    ynh_mongo_drop_user --db_user=$db_user
+    ynh_mongo_drop_user --db_user=$db_user --db_name=$db_name
 }
