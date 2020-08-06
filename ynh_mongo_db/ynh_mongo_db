@@ -89,7 +89,7 @@ ynh_mongo_create_db() {
 # If you intend to drop the database *and* the associated user,
 # consider using ynh_mongo_remove_db instead.
 #
-# usage: ynh_mongo_drop_db -database=db
+# usage: ynh_mongo_drop_db --database=database
 # | arg: -d, --database=    - The database name to drop
 #
 #
