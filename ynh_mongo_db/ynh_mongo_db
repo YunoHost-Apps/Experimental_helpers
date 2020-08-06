@@ -194,7 +194,7 @@ ynh_mongo_drop_user() {
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
-    ynh_mongo_exec_as --command='db.dropUser("'${db_user}'", {w: "majority", wtimeout: 5000})'
+    ynh_mongo_exec_as --command='db.dropUser("'$db_user'", {w: "majority", wtimeout: 5000})'
 }
 
 # Create a database, an user and its password. Then store the password in the app's config
