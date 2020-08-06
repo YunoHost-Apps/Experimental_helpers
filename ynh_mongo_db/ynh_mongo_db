@@ -17,7 +17,7 @@ MONGO_KEY_BUSTER="https://www.mongodb.org/static/pgp/server-4.2.asc"
 # example: ynh_mongo_exec_as --command='db.getMongo().getDBNames().indexOf("wekan")'
 # example: ynh_mongo_exec_as --command="db.getMongo().getDBNames().indexOf(\"wekan\")"
 #
-# usage: ynh_mongo_exec_as [--user=user] [--password=password] [--authenticationdatabase=authenticationdatabase] [--database=database] [--host=host] [--port=port] --command="command"
+# usage: ynh_mongo_exec_as [--user=user] [--password=password] [--authenticationdatabase=authenticationdatabase] [--database=database] [--host=host] [--port=port] --command="command" [--eval]
 # | arg: -u, --user=                      - The user name to connect as
 # | arg: -p, --password=                  - The user password
 # | arg: -d, --authenticationdatabase=    - The authenticationdatabase to connect to
@@ -107,12 +107,12 @@ EOF
 
 }
 
-# Evaluate a mongo command as root user
+# Execute a mongo command as root user
 #
-# usage: ynh_mongo_exec_as_root [--database=database] --command="command"
-# | arg: -d, --database=    - the database to connect to
-# | arg: -c, --command=     - the command to evaluate
-# | arg: -e, --eval         - evaluate instead of execute the command.
+# usage: ynh_mongo_exec_as_root [--database=database] --command="command" [--eval]
+# | arg: -d, --database=    - The database to connect to
+# | arg: -c, --command=     - The command to evaluate
+# | arg: -e, --eval         - Execute instead of execute the command.
 #
 #
 ynh_mongo_exec_as_root() {
