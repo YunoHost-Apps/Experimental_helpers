@@ -341,7 +341,7 @@ ynh_mongo_remove_db() {
 ynh_mongo_test_if_first_run() {
 
     # Make sure Mongodb is indeed installed
-    dpkg --list | grep -q "ii  mongodb.*server" || ynh_die "postgresql-$mongo_VERSION is not installed !?"
+    dpkg --list | grep -q "ii  mongodb.*server" || ynh_die "MongoDB is not installed !?"
 
     # Define Mongo Service Name
     if [ "$(lsb_release --codename --short)" = "buster" ]; then
