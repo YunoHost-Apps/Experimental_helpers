@@ -225,6 +225,7 @@ ynh_mongo_setup_db() {
     # Create the user and grant access to the database
     ynh_mongo_create_user --db_user="$db_user" --db_pwd="$db_pwd" --db_name="$db_name"
 
+    # Store the password in the app's config
     ynh_app_setting_set --app=$app --key=db_pwd --value=$db_pwd 
 }
 
