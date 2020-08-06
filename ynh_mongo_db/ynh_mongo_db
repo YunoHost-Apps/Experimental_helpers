@@ -324,8 +324,8 @@ ynh_mongo_remove_db() {
         ynh_print_warn --message="Database $db_name not found"
     fi
 
-    # Remove mongo user
-    ynh_mongo_drop_user --db_name=$db_name --db_user=$db_user
+    # Remove mongo user if it exists
+    ynh_mongo_drop_user --db_user=$db_user --db_name=$db_name
 }
 
 # Create a master password and set up global settings
