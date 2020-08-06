@@ -40,6 +40,7 @@ ynh_mongo_exec_as() {
     local port
     local command
     local eval
+
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
     user="${user:-}"
@@ -80,6 +81,9 @@ ynh_mongo_exec_as() {
     else
         database=""
     fi
+
+    # Configure dabase connection
+    database="use $database"
 
     # If host is provided
     if [ -n "$host" ]
@@ -165,7 +169,7 @@ ynh_mongo_drop_db() {
 # example: ynh_mongo_dump_db --database=wekan > ./dump.bson
 #
 # usage: ynh_mongo_dump_db --database=database
-# | arg: -d, --database=    - the database name to dump
+# | arg: -d, --database=    - The database name to dump
 # | ret: the mongodump output
 #
 #
@@ -209,7 +213,7 @@ ynh_mongo_create_user() {
 # Check if a mongo database exists
 #
 # usage: ynh_mongo_database_exists --database=database
-# | arg: -d, --database=    - the database for which to check existence
+# | arg: -d, --database=    - The database for which to check existence
 # | exit: Return 1 if the database doesn't exist, 0 otherwise
 #
 #
@@ -234,7 +238,7 @@ ynh_mongo_database_exists() {
 # example: ynh_mongo_restore_db --database=wekan < ./dump.bson
 #
 # usage: ynh_mongo_restore_db --database=database
-# | arg: -d, --database=    - the database name to restore
+# | arg: -d, --database=    - The database name to restore
 #
 #
 ynh_mongo_restore_db() {
