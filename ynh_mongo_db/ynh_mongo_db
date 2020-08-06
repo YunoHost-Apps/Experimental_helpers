@@ -1,5 +1,14 @@
 #!/bin/bash
 
+MONGO_SERVICENAME_STRETCH="mongodb"
+MONGO_SERVICENAME_BUSTER="mongod"
+MONGO_DEPENDENCIES_STRETCH="mongodb mongodb-server mongo-tools"
+MONGO_DEPENDENCIES_BUSTER="mongodb-org mongodb-org-server mongodb-org-tools"
+MONGO_CONFIG_STRETCH="/etc/mongodb.conf"
+MONGO_CONFIG_BUSTER="/etc/mongod.conf"
+MONGO_REPO_BUSTER="deb http://repo.mongodb.org/apt/debian buster/mongodb-org/4.2 main"
+MONGO_KEY_BUSTER="https://www.mongodb.org/static/pgp/server-4.2.asc"
+
 # Execute a mongo command
 #
 # example: ynh_mongo_exec_as --command='db.getMongo().getDBNames().indexOf("wekan")'
@@ -290,4 +299,34 @@ ynh_mongo_remove_db() {
 
     # Remove mongo user if it exists
     ynh_mongo_drop_user --db_user=$db_user --db_name=$db_name
+}
+
+# Install MongoDB
+#
+# usage: ynh_mongo_install
+#
+#
+ynh_mongo_install() {
+    # Define Mongo Service Name
+    if [ "$(lsb_release --codename --short)" = "buster" ]; then
+        ynh_install_extra_app_dependencies --repo="$MONGO_REPO_BUSTER" --package="$MONGO_DEPENDENCIES_BUSTER" --key="$MONGO_KEY_BUSTER"
+    else
+        ynh_install_app_dependencies $MONGO_DEPENDENCIES_STRETCH
+    fi   
+}
+
+# Remove MongoDB
+# Only remove the MongoDB service integration in YunoHost for now
+# if MongoDB package as been removed
+#
+# usage: ynh_mongo_remove
+#
+#
+ynh_mongo_remove() {
+    # Only remove the mongodb service if it is not installed.
+    if ! ynh_package_is_installed --package="mongodb*"
+    then
+        yunohost service remove $MONGODB_SERVICENAME
+        # ynh_secure_remove --file=$MONGO_ROOT_PWD_FILE
+    fi
 }
