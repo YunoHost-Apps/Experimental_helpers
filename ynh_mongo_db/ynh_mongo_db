@@ -385,7 +385,7 @@ ynh_mongo_test_if_first_run() {
     fi
 }
 
-# Install MongoDB and intregrate MongoDB service in YunoHost
+# Install MongoDB and integrate MongoDB service in YunoHost
 #
 # usage: ynh_mongo_install
 #
