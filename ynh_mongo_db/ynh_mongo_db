@@ -142,7 +142,7 @@ ynh_mongo_exec_as_root() {
         eval="--eval"
     fi
 
-    ynh_mongo_exec_as --user="$MONGO_ROOT_USER" --password="$(cat $MONGO_ROOT_PWD_FILE)" --authenticationdatabase=admin --database="$database" --command="$command" $eval
+    ynh_mongo_exec --user="$MONGO_ROOT_USER" --password="$(cat $MONGO_ROOT_PWD_FILE)" --authenticationdatabase=admin --database="$database" --command="$command" $eval
 }
 
 # Drop a database
@@ -369,7 +369,7 @@ ynh_mongo_test_if_first_run() {
         local mongo_root_password="$(ynh_string_random)"
         echo "$mongo_root_password" >$MONGO_ROOT_PWD_FILE
         sleep 10
-        ynh_mongo_exec_as --database=admin --command='db.createUser( { user: "'${MONGO_ROOT_USER}'", pwd: "'${mongo_root_password}'", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } );'
+        ynh_mongo_exec --database=admin --command='db.createUser( { user: "'${MONGO_ROOT_USER}'", pwd: "'${mongo_root_password}'", roles: [ { role: "userAdminAnyDatabase", db: "admin" } ] } );'
 
         ynh_systemd_action --service_name=$MONGODB_SERVICENAME --action=stop
         # Enable access control
