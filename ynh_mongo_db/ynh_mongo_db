@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Evaluate a mongo command
+# Execute a mongo command
 #
 # example: ynh_mongo_exec_as --command='db.getMongo().getDBNames().indexOf("wekan")'
 # example: ynh_mongo_exec_as --command="db.getMongo().getDBNames().indexOf(\"wekan\")"
@@ -66,20 +66,6 @@ $database
 ${command}
 quit()
 EOF
-}
-
-# Create a database 
-#
-# [internal]
-#
-# usage: ynh_mongo_create_db db_name
-# | arg: db_name    - The database name to create
-#
-#
-ynh_mongo_create_db() {
-    local db_name=$1
-    local db_user=$2
-
 }
 
 # Drop a database
