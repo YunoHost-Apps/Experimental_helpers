@@ -2,7 +2,6 @@
 
 MONGO_ROOT_PWD_FILE=/etc/yunohost/mongo
 MONGO_ROOT_USER=mongoadmin
-MONGO_VERSION=9.6
 MONGO_SERVICENAME_STRETCH="mongodb"
 MONGO_SERVICENAME_BUSTER="mongod"
 MONGO_DEPENDENCIES_STRETCH="mongodb mongodb-server mongo-tools"
