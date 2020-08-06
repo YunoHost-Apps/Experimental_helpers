@@ -318,8 +318,7 @@ ynh_mongo_remove_db() {
     # Manage arguments with getopts
     ynh_handle_getopts_args "$@"
 
-    if ynh_mongo_database_exists --database=$db_name; then
-        # Check if the database exists
+    if ynh_mongo_database_exists --database=$db_name; then  # Check if the database exists
         ynh_mongo_drop_db --database=$db_name  # Remove the database
     else
         ynh_print_warn --message="Database $db_name not found"
