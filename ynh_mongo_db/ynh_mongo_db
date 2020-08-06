@@ -253,7 +253,7 @@ ynh_mongo_restore_db() {
 # [internal]
 #
 # usage: ynh_mongo_drop_user --db_user=user --db_name=name
-# | arg: user - the user name to drop
+# | arg: -u, --db_user=     - The user to drop
 # | arg: -n, --db_name=     - Name of the database
 #
 #
