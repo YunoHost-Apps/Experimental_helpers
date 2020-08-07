@@ -360,10 +360,7 @@ ynh_mongo_test_if_first_run() {
     
     # Make sure MongoDB is started and enabled
     systemctl is-enabled $MONGODB_SERVICENAME -q || systemctl enable $MONGODB_SERVICENAME --quiet
-    systemctl is-active $MONGODB_SERVICENAME -q || ynh_systemd_action --service_name=$MONGODB_SERVICENAME --action=restart
-
-    # Waiting Mongo DB to be fully started
-    sleep 10
+    systemctl is-active $MONGODB_SERVICENAME -q || ynh_systemd_action --service_name=$MONGODB_SERVICENAME --action=restart --line_match="aiting for connections" --log_path="/var/log/mongodb/$MONGODB_SERVICENAME.log"
     
     # If this is the very first time, we define the root password
     # and configure a few things
