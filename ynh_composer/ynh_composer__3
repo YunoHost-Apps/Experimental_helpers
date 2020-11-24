@@ -37,7 +37,7 @@ ynh_composer_exec () {
 # | arg: -c, --composerversion - Composer version to install
 ynh_install_composer () {
 	# Declare an array to define the options of this helper.
-	local legacy_args=vwa
+	local legacy_args=vwac
 	declare -Ar args_array=( [v]=phpversion= [w]=workdir= [a]=install_args= [c]=composerversion=)
 	local phpversion
 	local workdir
