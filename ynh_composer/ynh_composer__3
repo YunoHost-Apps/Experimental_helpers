@@ -55,7 +55,7 @@ ynh_install_composer () {
 		php${phpversion} -- --quiet --install-dir="$workdir" --version=$composerversion \
 		|| ynh_die "Unable to install Composer."
 
-	# update dependencies to create composer.lock
+	# install dependencies
 	ynh_composer_exec --phpversion="${phpversion}" --workdir="$workdir" --commands="install --no-dev $install_args" \
 		|| ynh_die "Unable to install core dependencies with Composer."
 }
