@@ -56,7 +56,7 @@ fi
 # When not possible (e.g. in systemd service definition), please use direct path
 # to pyenv shims (e.g. $PYENV_ROOT/shims/bundle)
 #
-# usage: ynh_install_python python_version user
+# usage: ynh_install_python --python_version=python_version
 # | arg: -v, --python_version= - Version of python to install.
 #        If possible, prefer to use major version number (e.g. 3 instead of 3.7.3).
 #        The crontab will handle the update of minor versions when needed.
