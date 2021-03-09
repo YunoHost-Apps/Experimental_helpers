@@ -1,0 +1,278 @@
+#!/bin/bash
+
+phpenv_version=20190623
+php_build_version=20210307
+phpenv_aliases_version=20180628
+phpenv_composer_version=20160325
+phpenv_install_dir="/opt/phpenv"
+php_version_path="$phpenv_install_dir/versions"
+# PHPENV_ROOT is the directory of phpenv, it needs to be loaded as a environment variable.
+export PHPENV_ROOT="$phpenv_install_dir"
+
+# Required dependencies
+phpenv_dependencies="autoconf2.13 autoconf2.64 autoconf bash bison build-essential ca-certificates curl findutils git libbz2-dev libcurl4-gnutls-dev libicu-dev libjpeg-dev libmcrypt-dev libonig-dev libpng-dev libreadline-dev libsqlite3-dev libssl-dev libtidy-dev libxml2-dev libxslt1-dev libzip-dev pkg-config re2c zlib1g-dev"
+
+# Install PHP Version Management
+#
+# [internal]
+#
+# usage: ynh_install_phpenv
+#
+# Requires YunoHost version 2.7.12 or higher.
+ynh_install_phpenv () {
+    ynh_print_info --message="Installation of phpenv - PHP Version Management - phpenv-${phpenv_version}/php-build-${php_build_version}"
+
+    # Build an app.src for phpenv
+    mkdir -p "../conf"
+    echo "SOURCE_URL=https://github.com/phpenv/phpenv/archive/9b7e4e1c0083c46be69f4c6d063f78c18654aad1.tar.gz
+SOURCE_SUM=96d8edddb2ab3f953f9ee64af8b45e7e983713e99507bba75c6b8cbaa466089a" > "../conf/phpenv.src"
+    # Download and extract phpenv
+    ynh_setup_source --dest_dir="$phpenv_install_dir" --source_id=phpenv
+
+    # Build an app.src for php-build
+    mkdir -p "../conf"
+    echo "SOURCE_URL=https://github.com/php-build/php-build/archive/6530e7501ccc758928d5510813dc3f5fbdc87419.tar.gz
+SOURCE_SUM=e2de1071f956033aa670e08f0fcf3317a26249b69eea7df42fa95187afa9a17f" > "../conf/php-build.src"
+    # Download and extract php-build
+    ynh_setup_source --dest_dir="$phpenv_install_dir/plugins/php-build" --source_id=php-build
+
+    # Build an app.src for phpenv-aliases
+    mkdir -p "../conf"
+    echo "SOURCE_URL=https://github.com/madumlao/phpenv-aliases/archive/89cbd4d4aa808f06299d903046c674139a8978fe.tar.gz
+SOURCE_SUM=ffaad964ff11a9cad8935e7e972c57cd08da203028a1573792dbbe5f15e0696a" > "../conf/phpenv-aliases.src"
+    # Download and extract phpenv-aliases
+    ynh_setup_source --dest_dir="$phpenv_install_dir/plugins/phpenv-aliases" --source_id=phpenv-aliases
+
+    # Build an app.src for phpenv-composer
+    mkdir -p "../conf"
+    echo "SOURCE_URL=https://github.com/ngyuki/phpenv-composer/archive/45af2a346747192aa46413f1d764fc25e177a46a.tar.gz
+SOURCE_SUM=1643fe1d49cf424c3590af6a23cef09c6050fc5b71212205b6d459debc6d063f" > "../conf/phpenv-composer.src"
+    # Download and extract phpenv-composer
+    ynh_setup_source --dest_dir="$phpenv_install_dir/plugins/phpenv-composer" --source_id=phpenv-composer
+
+    # Create shims directory if needed
+    if [ ! -d $phpenv_install_dir/shims ] ; then
+        mkdir $phpenv_install_dir/shims
+    fi
+}
+
+# Load the version of PHP for an app, and set variables.
+#
+# ynh_use_php has to be used in any app scripts before using PHP for the first time.
+# This helper will provide alias and variables to use in your scripts.
+#
+# To use gem or PHP, use the alias `ynh_gem` and `ynh_php`
+# Those alias will use the correct version installed for the app
+# For example: use `ynh_gem install` instead of `gem install`
+#
+# With `sudo` or `ynh_exec_as`, use instead the fallback variables `$ynh_gem` and `$ynh_php`
+# And propagate $PATH to sudo with $ynh_php_load_path
+# Exemple: `ynh_exec_as $app $ynh_php_load_path $ynh_gem install`
+#
+# $PATH contains the path of the requested version of PHP.
+# However, $PATH is duplicated into $php_path to outlast any manipulation of $PATH
+# You can use the variable `$ynh_php_load_path` to quickly load your PHP version
+#  in $PATH for an usage into a separate script.
+# Exemple: $ynh_php_load_path $final_path/script_that_use_gem.sh`
+#
+#
+# Finally, to start a PHP service with the correct version, 2 solutions
+#  Either the app is dependent of PHP or gem, but does not called it directly.
+#  In such situation, you need to load PATH
+#    `Environment="__YNH_PHP_LOAD_ENV_PATH__"`
+#    `ExecStart=__FINALPATH__/my_app`
+#     You will replace __YNH_PHP_LOAD_ENV_PATH__ with $ynh_php_load_path
+#
+#  Or PHP start the app directly, then you don't need to load the PATH variable
+#    `ExecStart=__YNH_PHP__ my_app run`
+#     You will replace __YNH_PHP__ with $ynh_php
+#
+#
+# one other variable is also available
+#   - $php_path: The absolute path to PHP binaries for the chosen version.
+#
+# usage: ynh_use_php
+#
+# Requires YunoHost version 2.7.12 or higher.
+ynh_use_php () {
+    php_version=$(ynh_app_setting_get --app=$app --key=php_version)
+
+    # Get the absolute path of this version of PHP
+    php_path="$php_version_path/$YNH_APP_INSTANCE_NAME/bin"
+
+    # Allow alias to be used into bash script
+    shopt -s expand_aliases
+
+    # Create an alias for the specific version of PHP and a variable as fallback
+    ynh_php="$php_path/php"
+    alias ynh_php="$ynh_php"
+    # And gem
+    ynh_gem="$php_path/gem"
+    alias ynh_gem="$ynh_gem"
+
+    # Load the path of this version of PHP in $PATH
+    if [[ :$PATH: != *":$php_path"* ]]; then
+        PATH="$php_path:$PATH"
+    fi
+    # Create an alias to easily load the PATH
+    ynh_php_load_path="PATH=$PATH"
+
+    # Sets the local application-specific PHP version
+    (cd $final_path
+    phpenv local $php_version)
+}
+
+# Install a specific version of PHP
+#
+# ynh_install_php will install the version of PHP provided as argument by using phpenv.
+#
+# phpenv (PHP Version Management) stores the target PHP version in a .php_version file created in the target folder (using phpenv local <version>)
+# It then uses that information for every PHP user that uses phpenv provided PHP command
+#
+# This helper creates a /etc/profile.d/phpenv.sh that configures PATH environment for phpenv
+# for every LOGIN user, hence your user must have a defined shell (as opposed to /usr/sbin/nologin)
+#
+# Don't forget to execute PHP-dependent command in a login environment
+# (e.g. sudo --login option)
+# When not possible (e.g. in systemd service definition), please use direct path
+# to phpenv shims (e.g. $PHPENV_ROOT/shims/bundle)
+#
+# usage: ynh_install_php --php_version=php_version
+# | arg: -v, --php_version= - Version of PHP to install.
+#
+# Requires YunoHost version 2.7.12 or higher.
+ynh_install_php () {
+    # Declare an array to define the options of this helper.
+    local legacy_args=v
+    local -A args_array=( [v]=php_version= )
+    local php_version
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+
+    # Store php_version into the config of this app
+    ynh_app_setting_set --app=$YNH_APP_INSTANCE_NAME --key=php_version --value=$php_version
+
+    # Create $phpenv_install_dir if doesn't exist already
+    mkdir -p "$phpenv_install_dir/plugins/php-build"
+
+    # Install required dependencies
+    ynh_add_app_dependencies --package="$phpenv_dependencies"
+
+    # Load phpenv path in PATH
+    local CLEAR_PATH="$phpenv_install_dir/bin:$PATH"
+
+    # Remove /usr/local/bin in PATH in case of PHP prior installation
+    PATH=$(echo $CLEAR_PATH | sed 's@/usr/local/bin:@@')
+
+    # Move an existing PHP binary, to avoid to block phpenv
+    test -x /usr/bin/PHP && mv /usr/bin/PHP /usr/bin/php_phpenv
+
+    # If phpenv is not previously setup, install it
+    if ! type phpenv > /dev/null 2>&1
+    then
+        ynh_install_phpenv
+    elif dpkg --compare-versions "$($phpenv_install_dir/bin/phpenv --version | cut -d" " -f2)" lt $phpenv_version
+    then
+        ynh_install_phpenv
+    elif dpkg --compare-versions "$($phpenv_install_dir/plugins/php-build/bin/php-build --version | cut -d" " -f2)" lt $php_build_version
+    then
+        ynh_install_phpenv
+    fi
+
+    # Restore /usr/local/bin in PATH
+    PATH=$CLEAR_PATH
+
+    # And replace the old PHP binary
+    test -x /usr/bin/php_phpenv && mv /usr/bin/php_phpenv /usr/bin/PHP
+
+    # Install the requested version of PHP
+    ynh_print_info --message="Installation of PHP-"$php_version
+    phpenv install --skip-existing $php_version
+
+    # Remove app virtualenv
+    if  `phpenv alias --list | grep --quiet "$YNH_APP_INSTANCE_NAME" 1>/dev/null 2>&1`
+    then
+        phpenv alias $YNH_APP_INSTANCE_NAME --remove
+    fi
+
+    # Create app virtualenv
+    phpenv alias $YNH_APP_INSTANCE_NAME $php_version
+
+    # Cleanup PHP versions
+    ynh_cleanup_php
+
+    # Set environment for PHP users
+    echo  "#phpenv
+export PHPENV_ROOT=$phpenv_install_dir
+export PATH=\"$phpenv_install_dir/bin:$PATH\"
+eval \"\$(phpenv init -)\"
+    #phpenv" > /etc/profile.d/phpenv.sh
+
+    # Load the environment
+    eval "$(phpenv init -)"
+}
+
+# Remove the version of PHP used by the app.
+#
+# This helper will also cleanup PHP versions
+#
+# usage: ynh_remove_php
+ynh_remove_php () {
+    local php_version=$(ynh_app_setting_get --app=$YNH_APP_INSTANCE_NAME --key=php_version)
+
+    # Load phpenv path in PATH
+    local CLEAR_PATH="$phpenv_install_dir/bin:$PATH"
+
+    # Remove /usr/local/bin in PATH in case of PHP prior installation
+    PATH=$(echo $CLEAR_PATH | sed 's@/usr/local/bin:@@')
+
+    phpenv alias $YNH_APP_INSTANCE_NAME --remove
+
+    # Remove the line for this app
+    ynh_app_setting_delete --app=$YNH_APP_INSTANCE_NAME --key=php_version
+
+    # Cleanup PHP versions
+    ynh_cleanup_php
+}
+
+# Remove no more needed versions of PHP used by the app.
+#
+# This helper will check what PHP version are no more required,
+# and uninstall them
+# If no app uses PHP, phpenv will be also removed.
+#
+# usage: ynh_cleanup_php
+ynh_cleanup_php () {
+
+    # List required PHP version
+    local installed_apps=$(yunohost app list | grep -oP 'id: \K.*$')
+    local required_php_versions=""
+    for installed_app in $installed_apps
+    do
+        local installed_app_php_version=$(yunohost app setting $installed_app php_version)
+        if [[ $installed_app_php_version ]]
+        then
+            required_php_versions="${installed_app_php_version}\n${required_php_versions}"
+        fi
+    done
+    
+    # Remove no more needed PHP version
+    local installed_php_versions=$(phpenv versions --bare --skip-aliases | grep -Ev '/')
+    for installed_php_version in $installed_php_versions
+    do
+        if ! `echo ${required_php_versions} | grep "${installed_php_version}" 1>/dev/null 2>&1`
+        then
+            ynh_print_info --message="Removing of PHP-"$installed_php_version
+            $phpenv_install_dir/bin/phpenv uninstall --force $installed_php_version
+        fi
+    done
+
+    # If none PHP version is required
+    if [[ ! $required_php_versions ]]
+    then
+        # Remove phpenv environment configuration
+        ynh_print_info --message="Removing of phpenv-"$phpenv_version
+        ynh_secure_remove --file="$phpenv_install_dir"
+        rm /etc/profile.d/phpenv.sh
+    fi
+}
