@@ -8,7 +8,7 @@ python_version_path="$pyenv_install_dir/versions"
 export PYENV_ROOT="$pyenv_install_dir"
 
 # Required dependencies
-pyenv_dependencies="build-essential libssl1.0-dev|libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git"
+pyenv_dependencies="build-essential libssl1.0-dev|libssl-dev zlib1g-dev libbz2-dev libreadline-dev|libedit-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git"
 
 # Install Python Version Management
 #
