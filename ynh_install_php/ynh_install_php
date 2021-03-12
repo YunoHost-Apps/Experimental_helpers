@@ -253,7 +253,7 @@ ynh_install_php () {
 export PHPENV_ROOT=$phpenv_install_dir
 export PATH=\"$phpenv_install_dir/bin:$PATH\"
 eval \"\$(phpenv init -)\"
-    #phpenv" > /etc/profile.d/phpenv.sh
+#phpenv" > /etc/profile.d/phpenv.sh
 
     # Load the environment
     eval "$(phpenv init -)"
