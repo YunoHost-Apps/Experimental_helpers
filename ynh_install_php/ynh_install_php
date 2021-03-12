@@ -176,21 +176,6 @@ ynh_install_php () {
         git clone -q https://github.com/madumlao/phpenv-aliases.git "${phpenv_install_dir}/plugins/phpenv-aliase"
     fi
 
-    php_composer="$(command -v "$phpenv_install_dir"/plugins/*/libexec/composer composer | head -1)"
-    if [ -n "$php_composer" ]; then
-        ynh_print_info --message="\`composer' command already available in \`$php_composer'."
-        pushd "${php_composer%/*/*}"
-            if git remote -v 2>/dev/null | grep -q phpenv-composer; then
-                ynh_print_info --message="Trying to update phpenv-composer with git..."
-                git pull -q origin master
-            fi
-        popd
-    else
-        ynh_print_info --message="Installing phpenv-composer with git..."
-        mkdir -p "${phpenv_install_dir}/plugins"
-        git clone -q https://github.com/ngyuki/phpenv-composer.git "${phpenv_install_dir}/plugins/phpenv-composer"
-    fi
-
     php_latest="$(command -v "$phpenv_install_dir"/plugins/*/bin/phpenv-latest phpenv-latest | head -1)"
     if [ -n "$php_latest" ]; then
         ynh_print_info --message="\`phpenv latest' command already available in \`$php_latest'."
@@ -204,6 +189,21 @@ ynh_install_php () {
         ynh_print_info --message="Installing xxenv-latest with git..."
         mkdir -p "${phpenv_install_dir}/plugins"
         git clone -q https://github.com/momo-lab/xxenv-latest.git "${phpenv_install_dir}/plugins/xxenv-latest"
+    fi
+
+    php_composer="$(command -v "$phpenv_install_dir"/plugins/*/libexec/composer composer | head -1)"
+    if [ -n "$php_composer" ]; then
+        ynh_print_info --message="\`composer' command already available in \`$php_composer'."
+        pushd "${php_composer%/*/*}"
+            if git remote -v 2>/dev/null | grep -q phpenv-composer; then
+                ynh_print_info --message="Trying to update phpenv-composer with git..."
+                git pull -q origin master
+            fi
+        popd
+    else
+        ynh_print_info --message="Installing phpenv-composer with git..."
+        mkdir -p "${phpenv_install_dir}/plugins"
+        git clone -q https://github.com/ngyuki/phpenv-composer.git "${phpenv_install_dir}/plugins/phpenv-composer"
     fi
 
     # Enable caching
@@ -324,7 +324,7 @@ ynh_cleanup_php () {
         # Remove phpenv environment configuration
         ynh_print_info --message="Removing of phpenv"
         ynh_secure_remove --file="$phpenv_install_dir"
-        rm /etc/profile.d/phpenv.sh
+        ynh_secure_remove --file="/etc/profile.d/phpenv.sh"
     fi
 }
 
