@@ -293,7 +293,7 @@ ynh_cleanup_php () {
     local required_php_versions=""
     for installed_app in $installed_apps
     do
-        local installed_app_php_version=$(yunohost app setting $installed_app php_version)
+        local installed_app_php_version=$(ynh_app_setting_get --app=$installed_app --key="php_version")
         if [[ $installed_app_php_version ]]
         then
             required_php_versions="${installed_app_php_version}\n${required_php_versions}"
