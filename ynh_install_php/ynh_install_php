@@ -4,7 +4,7 @@
 ynh_php_try_bash_extension() {
   if [ -x src/configure ]; then
     src/configure && make -C src || {
-      echo "Optional bash extension failed to build, but things will still work normally."
+      ynh_print_info --message="Optional bash extension failed to build, but things will still work normally."
     }
   fi
 }
@@ -87,9 +87,6 @@ ynh_use_php () {
 #
 # ynh_install_php will install the version of PHP provided as argument by using phpenv.
 #
-# phpenv (PHP Version Management) stores the target PHP version in a .php_version file created in the target folder (using phpenv local <version>)
-# It then uses that information for every PHP user that uses phpenv provided PHP command
-#
 # This helper creates a /etc/profile.d/phpenv.sh that configures PATH environment for phpenv
 # for every LOGIN user, hence your user must have a defined shell (as opposed to /usr/sbin/nologin)
 #
@@ -122,7 +119,7 @@ ynh_install_php () {
     # Move an existing PHP binary, to avoid to block phpenv
     # test -x /usr/bin/PHP && mv /usr/bin/PHP /usr/bin/php_phpenv
 
-    # Instal or update phpenv
+    # Install or update phpenv
     phpenv="$(command -v phpenv $phpenv_install_dir/bin/phpenv | head -1)"
     if [ -n "$phpenv" ]; then
         ynh_print_info --message="phpenv already seems installed in \`$phpenv'."
