@@ -124,7 +124,7 @@ ynh_install_php () {
     if [ -n "$phpenv" ]; then
         ynh_print_info --message="phpenv already seems installed in \`$phpenv'."
         pushd "${phpenv%/*/*}"
-            if git remote -v 2>/dev/null | grep -q phpenv; then
+            if git remote -v 2>/dev/null | grep "https://github.com/sptndc/phpenv.git"; then
                 echo "Trying to update with git..."
                 git pull -q --tags origin master
                 cd ..
@@ -147,7 +147,7 @@ ynh_install_php () {
     if [ -n "$php_build" ]; then
         ynh_print_info --message="\`phpenv install' command already available in \`$php_build'."
         pushd "${php_build%/*/*}"
-            if git remote -v 2>/dev/null | grep -q php-build; then
+            if git remote -v 2>/dev/null | grep "https://github.com/php-build/php-build.git"; then
                 ynh_print_info --message="Trying to update phpenv with git..."
                 git pull -q origin master
             fi
@@ -162,7 +162,7 @@ ynh_install_php () {
     if [ -n "$php_alias" ]; then
         ynh_print_info --message="\`phpenv alias' command already available in \`$php_alias'."
         pushd "${php_alias%/*/*}"
-            if git remote -v 2>/dev/null | grep -q phpenv-aliases; then
+            if git remote -v 2>/dev/null | grep "https://github.com/madumlao/phpenv-aliases.git"; then
                 ynh_print_info --message="Trying to update phpenv-aliases with git..."
                 git pull -q origin master
             fi
@@ -177,7 +177,7 @@ ynh_install_php () {
     if [ -n "$php_latest" ]; then
         ynh_print_info --message="\`phpenv latest' command already available in \`$php_latest'."
         pushd "${php_latest%/*/*}"
-            if git remote -v 2>/dev/null | grep -q xxenv-latest; then
+            if git remote -v 2>/dev/null | grep "https://github.com/momo-lab/xxenv-latest.git"; then
                 ynh_print_info --message="Trying to update xxenv-latest with git..."
                 git pull -q origin master
             fi
@@ -192,7 +192,7 @@ ynh_install_php () {
     if [ -n "$php_composer" ]; then
         ynh_print_info --message="\`composer' command already available in \`$php_composer'."
         pushd "${php_composer%/*/*}"
-            if git remote -v 2>/dev/null | grep -q phpenv-composer; then
+            if git remote -v 2>/dev/null | grep "https://github.com/ngyuki/phpenv-composer.git"; then
                 ynh_print_info --message="Trying to update phpenv-composer with git..."
                 git pull -q origin master
             fi
