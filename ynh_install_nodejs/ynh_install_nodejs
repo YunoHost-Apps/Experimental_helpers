@@ -296,6 +296,6 @@ ynh_cleanup_nodejs () {
         ynh_secure_remove --file="$n_install_dir"
         ynh_secure_remove --file="/usr/local/n"
         sed --in-place "/$n_install_dir/d" /root/.bashrc
-        rm --force /etc/cron.daily/node_update
+        ynh_secure_remove --file="/etc/cron.daily/node_update"
     fi
 }
