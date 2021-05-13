@@ -68,11 +68,15 @@ ynh_send_readme_to_admin() {
 		mail_subject="$mail_subject has just been installed!"
 	fi
 
+	ynh_add_config --template="$app_message" --destination="../conf/msg__to_send"
+
+	ynh_delete_file_checksum --file="../conf/msg__to_send"
+
 	local mail_message="This is an automated message from your beloved YunoHost server.
 
 Specific information for the application $app.
 
-$(cat "$app_message")"
+$(cat "../conf/msg__to_send")"
 
 	# Store the message into a file for further modifications.
 	echo "$mail_message" > mail_to_send
