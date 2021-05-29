@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Check the architecture
+#
+# Returns the system's CPU architecture; possible values are `amd64`, `arm64`, `armel`, `armhf`, and `i386`. 
+#
+# example: architecture=$(ynh_detect_arch)
+#
+# usage: ynh_detect_arch
+
+function ynh_detect_arch {
+	local uname_arch="$(uname -m)"
+	local architecture
+	if [ -n "$(printf uname_arch | grep arm)" ] || [ -n "$(printf uname_arch | grep aarch)" ]; then
+		if [ -n "$(printf uname_arch  | grep 64)" ]; then
+			architecture="arm64"
+		elif [ -n "$(printf uname_arch | grep 7)" ] || [ -n "$(printf uname_arch | grep hf)" ] ; then
+			architecture="armhf"
+		else
+			architecture="armel"
+		fi
+	elif [ -n "$(printf uname_arch | grep 64)" ]; then
+		architecture="amd64"
+	elif [ -n "$(printf uname_arch | grep 86)" ]; then
+		architecture="i386"
+	else
+		ynh_die "Unable to detect your achitecture \"($uname_arch)\", please open a bug describing \
+			your hardware and the result of the command \"uname -m\"." 1
+	fi
+
+	printf architecture
+}
