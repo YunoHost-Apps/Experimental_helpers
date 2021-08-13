@@ -73,7 +73,6 @@ ynh_send_readme_to_admin() {
 	ynh_add_config --template="$app_message" --destination="../conf/msg_to_send"
 
 	ynh_delete_file_checksum --file="../conf/msg_to_send"
-
 	local mail_message="This is an automated message from your beloved YunoHost server.
 
 Specific information for the application $app.
