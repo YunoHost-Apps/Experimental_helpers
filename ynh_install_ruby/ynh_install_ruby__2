@@ -271,7 +271,7 @@ ynh_remove_ruby () {
 ynh_cleanup_ruby () {
 
     # List required Ruby versions
-    local installed_apps=$(yunohost app list | grep -oP 'id: \K.*$')
+    local installed_apps=$(yunohost app list --output-as json --quiet | jq -r .apps[].id)
     local required_ruby_versions=""
     for installed_app in $installed_apps
     do
