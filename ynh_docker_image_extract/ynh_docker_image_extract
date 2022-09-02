@@ -1,47 +1,51 @@
 #!/bin/bash
+
 #
 # This script pulls and extracts all files from an image in Docker Hub.
 #
-# Copyright (c) 2020-2021, Jeremy Lin
+# usage: ynh_docker_image_extract --dest_dir=dest_dir --image_spec=image_spec [--os_arch_variant=os_arch_variant] [--keep="file1 file2"]
+# | arg: -d, --dest_dir=		- Directory where to setup sources
+# | arg: -i, --image_spec=		- Name of the source, defaults to `app`
+# | arg: -o, --os_arch_variant=	- Name of the source, defaults to `app`
+# | arg: -k, --keep=			- Space-separated list of files/folders that will be backup/restored in $dest_dir, such as a config file you don't want to overwrite. For example 'conf.json secrets.json logs/'
 #
-# Permission is hereby granted, free of charge, to any person obtaining a
-# copy of this software and associated documentation files (the "Software"),
-# to deal in the Software without restriction, including without limitation
-# the rights to use, copy, modify, merge, publish, distribute, sublicense,
-# and/or sell copies of the Software, and to permit persons to whom the
-# Software is furnished to do so, subject to the following conditions:
+# Pull and extract all files from the 'hello-world' image tagged 'latest'.
+# example: ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world:latest"
 #
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
+# Same as above; tag defaults to 'latest'.
+# example: ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world"
 #
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-# DEALINGS IN THE SOFTWARE.
+# Same as above; tag defaults from 'latest' for a specific OS/ARCH.
+# example: ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world "--os_arch_variant=="linux/arm/v6"
 #
-if [ $# -eq 0 ]; then
-	echo "$0 IMAGE[:REF]"
-	echo
-	echo "This script pulls and extracts all files from an image in Docker Hub."
-	echo
-	echo "Examples:"
-	echo
-	echo "# Pull and extract all files in the 'hello-world' image tagged 'latest'."
-	echo "\$ $0 hello-world:latest"
-	echo
-	echo "# Same as above; tag defaults to 'latest'."
-	echo "\$ $0 hello-world"
-	echo
-	echo "# Same as above; tag defaults to 'latest' for a specific OS/ARCH."
-	echo "\$ $0 hello-world linux/arm/v6"
-	echo
-	echo "# Same as above, but specify the image by digest."
-	echo "\$ $0 hello-world:sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042"
-	exit 1
-fi
+# Same as above, but specify the image by digest, don't require the specific OS/ARCH.
+ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world:sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042"
+#
+# This helper will pulls and extracts all files from the image $image_spec in Docker Hub.
+#
+# The helper will:
+# - Check if there is a local source archive in `/opt/yunohost-apps-src/$APP_ID/$SOURCE_FILENAME`
+# - Download `$SOURCE_URL` if there is no local archive
+# - Check the integrity with `$SOURCE_SUM_PRG -c --status`
+# - Uncompress the archive to `$dest_dir`.
+#   - If `$SOURCE_IN_SUBDIR` is true, the first level directory of the archive will be removed.
+#   - If `$SOURCE_IN_SUBDIR` is a numeric value, the N first level directories will be removed.
+# - Patches named `sources/patches/${src_id}-*.patch` will be applied to `$dest_dir`
+# - Extra files in `sources/extra_files/$src_id` will be copied to dest_dir
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_docker_image_extract() {
+	# Declare an array to define the options of this helper.
+	local legacy_args=diok
+	local -A args_array=([d]=dest_dir= [i]=image_spec= [o]=os_arch_variant= [k]=keep=)
+	local dest_dir
+	local image_spec
+	local os_arch_variant
+	local keep
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+	os_arch_variant="${os_arch_variant:-'linux/amd64'}"
+	keep="${keep:-}"
 
 have_curl() {
 	command -v curl >/dev/null
@@ -49,10 +53,6 @@ have_curl() {
 
 have_wget() {
 	command -v wget >/dev/null
-}
-
-have_jq() {
-	command -v jq >/dev/null
 }
 
 if ! have_curl && ! have_wget; then
@@ -99,7 +99,6 @@ fetch() {
 	fi
 }
 
-image_spec="$1"
 os_arch_variant="$2"
 
 IFS='/' read -ra newarr <<< "$os_arch_variant"
@@ -177,3 +176,26 @@ for layer in $layers; do
 done
 
 echo "Image contents extracted into $output_dir."
+}
+
+#
+# Copyright (c) 2020-2021, Jeremy Lin
+#
+# Permission is hereby granted, free of charge, to any person obtaining a
+# copy of this software and associated documentation files (the "Software"),
+# to deal in the Software without restriction, including without limitation
+# the rights to use, copy, modify, merge, publish, distribute, sublicense,
+# and/or sell copies of the Software, and to permit persons to whom the
+# Software is furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+#
