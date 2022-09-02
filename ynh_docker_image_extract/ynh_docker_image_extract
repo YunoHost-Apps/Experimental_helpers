@@ -5,8 +5,8 @@
 #
 # usage: ynh_docker_image_extract --dest_dir=dest_dir --image_spec=image_spec [--os_arch_variant=os_arch_variant] [--keep="file1 file2"]
 # | arg: -d, --dest_dir=		- Directory where to setup sources
-# | arg: -i, --image_spec=		- Name of the source, defaults to `app`
-# | arg: -o, --os_arch_variant=	- Name of the source, defaults to `app`
+# | arg: -i, --image_spec=		- Image specification
+# | arg: -o, --os_arch_variant=	- OS, architecture and variant seen as OS/ARCH. on Docker Hub
 # | arg: -k, --keep=			- Space-separated list of files/folders that will be backup/restored in $dest_dir, such as a config file you don't want to overwrite. For example 'conf.json secrets.json logs/'
 #
 # Pull and extract all files from the 'hello-world' image tagged 'latest'.
@@ -19,17 +19,12 @@
 # example: ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world "--os_arch_variant=="linux/arm/v6"
 #
 # Same as above, but specify the image by digest, don't require the specific OS/ARCH.
-ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world:sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042"
+# example: ynh_docker_image_extract --dest_dir="dest_dir" --image_spec="hello-world:sha256:90659bf80b44ce6be8234e6ff90a1ac34acbeb826903b02cfa0da11c82cbc042"
 #
 # This helper will pulls and extracts all files from the image $image_spec in Docker Hub.
 #
 # The helper will:
-# - Check if there is a local source archive in `/opt/yunohost-apps-src/$APP_ID/$SOURCE_FILENAME`
-# - Download `$SOURCE_URL` if there is no local archive
-# - Check the integrity with `$SOURCE_SUM_PRG -c --status`
-# - Uncompress the archive to `$dest_dir`.
-#   - If `$SOURCE_IN_SUBDIR` is true, the first level directory of the archive will be removed.
-#   - If `$SOURCE_IN_SUBDIR` is a numeric value, the N first level directories will be removed.
+# - Download `$image_spec` and extract it to `$dest_dir`.
 # - Patches named `sources/patches/${src_id}-*.patch` will be applied to `$dest_dir`
 # - Extra files in `sources/extra_files/$src_id` will be copied to dest_dir
 #
@@ -92,8 +87,6 @@ ynh_docker_image_extract() {
 			wget -qO- "$@"
 		fi
 	}
-
-	os_arch_variant="$2"
 
 	IFS='/' read -ra newarr <<< "$os_arch_variant"
 	os=${newarr[0]:-'linux'}
