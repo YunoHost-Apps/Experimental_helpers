@@ -56,8 +56,7 @@ ynh_docker_image_extract() {
 	}
 
 	if ! have_curl && ! have_wget; then
-		ynh_print_info --message="This script requires either curl or wget."
-		exit 1
+		ynh_die --message="This script requires either curl or wget."
 	fi
 
 	# Given a JSON input on stdin, extract the string value associated with the
@@ -133,27 +132,46 @@ ynh_docker_image_extract() {
 	# https://github.com/docker/distribution/blob/master/docs/spec/api.md#pulling-a-layer
 	blobs_base_url="https://registry-1.docker.io/v2/${image}/blobs"
 
-	ynh_print_info --message="Getting API token..."
+	# Getting API token
 	token=$(fetch "${api_token_url}" | extract 'token')
 	auth_header="Authorization: Bearer $token"
 	v2_header="Accept: application/vnd.docker.distribution.manifest.v2+json"
 
-	ynh_print_info --message="Getting image manifest for $image:$tag $digest..."
+	# Getting image manifest for $image:$tag $digest
 	layers=$(fetch "${manifest_url}" "${auth_header}" "${v2_header}" |
 				 # Extract `digest` values only after the `layers` section appears.
 				 sed -n '/"layers":/,$ p' |
 				 extract 'digest')
 
 	if [ -z "${layers}" ]; then
-		ynh_print_info --message="No layers returned. Verify that the image and tag are valid."
-		exit 1
+		ynh_die --message="No layers returned. Verify that the image and tag are valid."
 	fi
 
-	mkdir -p "${dest_dir}"
+	# Keep files to be backup/restored at the end of the helper
+	# Assuming $dest_dir already exists
+	rm -rf /var/cache/yunohost/files_to_keep_during_setup_source/
+	if [ -n "$keep" ] && [ -e "$dest_dir" ]; then
+		local keep_dir=/var/cache/yunohost/files_to_keep_during_setup_source/${YNH_APP_ID}
+		mkdir -p $keep_dir
+		local stuff_to_keep
+		for stuff_to_keep in $keep; do
+			if [ -e "$dest_dir/$stuff_to_keep" ]; then
+				mkdir --parents "$(dirname "$keep_dir/$stuff_to_keep")"
+				cp --archive "$dest_dir/$stuff_to_keep" "$keep_dir/$stuff_to_keep"
+			fi
+		done
+	fi
+
+	# Extract source into the app dir
+	mkdir --parents "$dest_dir"
+
+	if [ -n "${final_path:-}" ] && [ "$dest_dir" == "$final_path" ]; then
+		_ynh_apply_default_permissions $dest_dir
+	fi
 
 	for layer in $layers; do
 		hash="${layer#sha256:}"
-		ynh_print_info --message="Fetching and extracting layer ${hash}..."
+		# Fetching and extracting layer ${hash}
 		fetch "${blobs_base_url}/${layer}" "${auth_header}" | gzip -d | tar -C "${dest_dir}" -xf -
 		# Ref: https://github.com/moby/moby/blob/master/image/spec/v1.2.md#creating-an-image-filesystem-changeset
 		#	  https://github.com/moby/moby/blob/master/pkg/archive/whiteouts.go
@@ -169,7 +187,38 @@ ynh_docker_image_extract() {
 		IFS="${OLD_IFS}"
 	done
 
-	ynh_print_info --message="Image contents extracted into $dest_dir."
+	# Apply patches
+	if [ -d "$YNH_APP_BASEDIR/sources/patches/" ]; then
+		local patches_folder=$(realpath $YNH_APP_BASEDIR/sources/patches/)
+		if (($(find $patches_folder -type f -name "${source_id}-*.patch" 2>/dev/null | wc --lines) > "0")); then
+			(
+				cd "$dest_dir"
+				for p in $patches_folder/${source_id}-*.patch; do
+					echo $p
+					patch --strip=1 <$p
+				done
+			) || ynh_die --message="Unable to apply patches"
+		fi
+	fi
+
+	# Add supplementary files
+	if test -e "$YNH_APP_BASEDIR/sources/extra_files/${source_id}"; then
+		cp --archive $YNH_APP_BASEDIR/sources/extra_files/$source_id/. "$dest_dir"
+	fi
+
+	# Keep files to be backup/restored at the end of the helper
+	# Assuming $dest_dir already exists
+	if [ -n "$keep" ]; then
+		local keep_dir=/var/cache/yunohost/files_to_keep_during_setup_source/${YNH_APP_ID}
+		local stuff_to_keep
+		for stuff_to_keep in $keep; do
+			if [ -e "$keep_dir/$stuff_to_keep" ]; then
+				mkdir --parents "$(dirname "$dest_dir/$stuff_to_keep")"
+				cp --archive "$keep_dir/$stuff_to_keep" "$dest_dir/$stuff_to_keep"
+			fi
+		done
+	fi
+	rm -rf /var/cache/yunohost/files_to_keep_during_setup_source/
 }
 
 #
