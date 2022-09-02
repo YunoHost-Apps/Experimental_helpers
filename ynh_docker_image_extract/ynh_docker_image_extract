@@ -60,11 +60,6 @@ ynh_docker_image_extract() {
 		exit 1
 	fi
 
-	if ! have_jq; then
-		echo "This script requires jq."
-		exit 1
-	fi
-
 	# Given a JSON input on stdin, extract the string value associated with the
 	# specified key. This avoids an extra dependency on a tool like `jq`.
 	extract() {
