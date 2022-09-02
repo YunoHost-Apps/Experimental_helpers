@@ -33,7 +33,7 @@ build_pkg_dependencies="$build_pkg_dependencies $build_ruby_dependencies"
 # Exemple: `ynh_exec_as $app $ynh_ruby_load_path $ynh_gem install`
 #
 # $PATH contains the path of the requested version of Ruby.
-# However, $PATH is duplicated into $ruby_path to outlast any manipulation of $PATH
+# However, $PATH is duplicated into $ynh_ruby_path to outlast any manipulation of $PATH
 # You can use the variable `$ynh_ruby_load_path` to quickly load your Ruby version
 #  in $PATH for an usage into a separate script.
 # Exemple: $ynh_ruby_load_path $final_path/script_that_use_gem.sh`
@@ -52,7 +52,7 @@ build_pkg_dependencies="$build_pkg_dependencies $build_ruby_dependencies"
 #
 #
 # one other variable is also available
-#   - $ruby_path: The absolute path to Ruby binaries for the chosen version.
+#   - $ynh_ruby_path: The absolute path to Ruby binaries for the chosen version.
 #
 # usage: ynh_use_ruby
 #
@@ -61,21 +61,21 @@ ynh_use_ruby () {
     ruby_version=$(ynh_app_setting_get --app=$app --key=ruby_version)
 
     # Get the absolute path of this version of Ruby
-    ruby_path="$ruby_version_path/$YNH_APP_INSTANCE_NAME/bin"
+    ynh_ruby_path="$ruby_version_path/$YNH_APP_INSTANCE_NAME/bin"
 
     # Allow alias to be used into bash script
     shopt -s expand_aliases
 
     # Create an alias for the specific version of Ruby and a variable as fallback
-    ynh_ruby="$ruby_path/ruby"
+    ynh_ruby="$ynh_ruby_path/ruby"
     alias ynh_ruby="$ynh_ruby"
     # And gem
-    ynh_gem="$ruby_path/gem"
+    ynh_gem="$ynh_ruby_path/gem"
     alias ynh_gem="$ynh_gem"
 
     # Load the path of this version of Ruby in $PATH
-    if [[ :$PATH: != *":$ruby_path"* ]]; then
-        PATH="$ruby_path:$PATH"
+    if [[ :$PATH: != *":$ynh_ruby_path"* ]]; then
+        PATH="$ynh_ruby_path:$PATH"
     fi
     # Create an alias to easily load the PATH
     ynh_ruby_load_path="PATH=$PATH"
