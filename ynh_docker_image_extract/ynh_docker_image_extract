@@ -39,7 +39,7 @@ ynh_docker_image_extract() {
 	local keep
 	# Manage arguments with getopts
 	ynh_handle_getopts_args "$@"
-	os_arch_variant="${os_arch_variant:-'linux/amd64'}"
+	os_arch_variant="${os_arch_variant:-}"
 	keep="${keep:-}"
 
 	have_curl() {
@@ -90,7 +90,7 @@ ynh_docker_image_extract() {
 
 	IFS='/' read -ra newarr <<< "$os_arch_variant"
 	os=${newarr[0]:-'linux'}
-	arch=${newarr[1]:-'amd64'}
+	arch=${newarr[1]:-$YNH_ARCH}
 	variant=${newarr[2]:-}
 
 	image="${image_spec%%:*}"
@@ -183,10 +183,10 @@ ynh_docker_image_extract() {
 	# Apply patches
 	if [ -d "$YNH_APP_BASEDIR/sources/patches/" ]; then
 		local patches_folder=$(realpath $YNH_APP_BASEDIR/sources/patches/)
-		if (($(find $patches_folder -type f -name "${source_id}-*.patch" 2>/dev/null | wc --lines) > "0")); then
+		if (($(find $patches_folder -type f -name "${image_spec}-*.patch" 2>/dev/null | wc --lines) > "0")); then
 			(
 				cd "$dest_dir"
-				for p in $patches_folder/${source_id}-*.patch; do
+				for p in $patches_folder/${image_spec}-*.patch; do
 					echo $p
 					patch --strip=1 <$p
 				done
@@ -195,8 +195,8 @@ ynh_docker_image_extract() {
 	fi
 
 	# Add supplementary files
-	if test -e "$YNH_APP_BASEDIR/sources/extra_files/${source_id}"; then
-		cp --archive $YNH_APP_BASEDIR/sources/extra_files/$source_id/. "$dest_dir"
+	if test -e "$YNH_APP_BASEDIR/sources/extra_files/${image_spec}"; then
+		cp --archive $YNH_APP_BASEDIR/sources/extra_files/$image_spec/. "$dest_dir"
 	fi
 
 	# Keep files to be backup/restored at the end of the helper
