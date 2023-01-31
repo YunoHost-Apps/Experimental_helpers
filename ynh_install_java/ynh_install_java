@@ -114,6 +114,21 @@ ynh_install_java() {
     ynh_use_java
 }
 
+# Remove the version of Java used by the app.
+#
+# As Java is installed using ynh_install_app_dependencies, it will be removed as well when you call ynh_remove_app_dependencies in your remove script
+#
+# usage: ynh_remove_java
+ynh_remove_java () {
+    local java_version=$(ynh_app_setting_get --app=$YNH_APP_INSTANCE_NAME --key=java_version)
+
+    # Remove the lines for this app
+    ynh_app_setting_delete --app=$YNH_APP_INSTANCE_NAME --key=java_version
+    ynh_app_setting_delete --app=$YNH_APP_INSTANCE_NAME --key=jdk_type
+    ynh_app_setting_delete --app=$YNH_APP_INSTANCE_NAME --key=java_engine
+
+}
+
 # Extract the architecture used to run this script
 # sets ynh_architecture as arm64 or amd64
 #
