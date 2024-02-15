@@ -1,5 +1,7 @@
 #!/bin/bash
 
+pkg_dependencies="$pkg_dependencies uwsgi uwsgi-plugin-python3 uwsgi-plugin-python"
+
 # Check if system wide templates are available and correcly configured
 #
 # usage: ynh_check_global_uwsgi_config
@@ -35,105 +37,95 @@ EOF
 
 # Create a dedicated uwsgi ini file to use with generic uwsgi service
 #
+# usage: ynh_add_uwsgi_service [--service=service] [--template=template]
+# | arg: -s, --service=     - Service name (optionnal, `$app` by default)
+# | arg: -t, --template=    - Name of template file (optionnal, this is 'systemd' by default, meaning `../conf/systemd.service` will be used as template)
+#
 # This will use a template in ../conf/uwsgi.ini
-# and will replace the following keywords with
-# global variables that should be defined before calling
-# this helper :
-#
-#   __APP__       by  $app
-#   __PATH__      by  $path_url
-#   __FINALPATH__ by  $final_path
-#
-#  And dynamic variables (from the last example) :
-#   __PATH_2__    by $path_2
-#   __PORT_2__    by $port_2
-#
-# To be able to customise the settings of the systemd unit you can override the rules with the file "conf/uwsgi-app@override.service".
-# This file will be automatically placed on the good place
 # 
 # Note that the service need to be started manually at the end of the installation.
 # Generally you can start the service with this command:
-# ynh_systemd_action --service_name "uwsgi-app@$app.service" --line_match "WSGI app 0 \(mountpoint='[/[:alnum:]_-]*'\) ready in [[:digit:]]* seconds on interpreter" --log_path "/var/log/uwsgi/$app/$app.log"
+# ynh_systemd_action --service_name "uwsgi-app@$service.service" --line_match "WSGI app 0 \(mountpoint='[/[:alnum:]_-]*'\) ready in [[:digit:]]* seconds on interpreter" --log_path "/var/log/uwsgi/$service/$service.log"
 #
-# usage: ynh_add_uwsgi_service
-#
+
 # to interact with your service: `systemctl <action> uwsgi-app@app`
 ynh_add_uwsgi_service () {
+    # Declare an array to define the options of this helper.
+    local legacy_args=st
+    local -A args_array=([s]=service= [t]=template=)
+    local service
+    local template
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+    service="${service:-$app}"
+    template="${template:-uwsgi.ini}"
+
 	ynh_check_global_uwsgi_config
 
-	local others_var=${1:-}
-	local finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-
 	# www-data group is needed since it is this nginx who will start the service
-	usermod --append --groups www-data "$app" || ynh_die --message="It wasn't possible to add user $app to group www-data"
+	usermod --append --groups www-data "$service" || ynh_die --message="It wasn't possible to add user $service to group www-data"
 
-	ynh_backup_if_checksum_is_different --file="$finaluwsgiini"
-	cp ../conf/uwsgi.ini "$finaluwsgiini"
+	ynh_add_config --template="$YNH_APP_BASEDIR/conf/$template" --destination="/etc/uwsgi/apps-available/$service.ini"
 
-	# To avoid a break by set -u, use a void substitution ${var:-}. If the variable is not set, it's simply set with an empty variable.
-	# Substitute in a nginx config file only if the variable is not empty
-	if test -n "${final_path:-}"; then
-		ynh_replace_string --match_string="__FINALPATH__" --replace_string="$final_path" --target_file="$finaluwsgiini"
-	fi
-	if test -n "${path_url:-}"; then
-		ynh_replace_string --match_string="__PATH__" --replace_string="$path_url" --target_file="$finaluwsgiini"
-	fi
-	if test -n "${app:-}"; then
-		ynh_replace_string --match_string="__APP__" --replace_string="$app" --target_file="$finaluwsgiini"
-	fi
-
-	# Replace all other variable given as arguments
-	for var_to_replace in $others_var
-	do
-		# ${var_to_replace^^} make the content of the variable on upper-cases
-		# ${!var_to_replace} get the content of the variable named $var_to_replace 
-		ynh_replace_string --match_string="__${var_to_replace^^}__" --replace_string="${!var_to_replace}" --target_file="$finaluwsgiini"
-	done
-
-	ynh_store_file_checksum --file="$finaluwsgiini"
-
-	chown $app:root "$finaluwsgiini"
+	chown $service:root "/etc/uwsgi/apps-available/$service.ini"
 
 	# make sure the folder for logs exists and set authorizations
-	mkdir -p /var/log/uwsgi/$app
-	chown $app:root /var/log/uwsgi/$app
-	chmod -R u=rwX,g=rX,o= /var/log/uwsgi/$app
+	mkdir -p /var/log/uwsgi/$service
+	chown $service:root /var/log/uwsgi/$service
+	chmod -R u=rwX,g=rX,o= /var/log/uwsgi/$service
 
 	# Setup specific Systemd rules if necessary
 	test -e ../conf/uwsgi-app@override.service && \
-		mkdir /etc/systemd/system/uwsgi-app@$app.service.d && \
-		cp ../conf/uwsgi-app@override.service /etc/systemd/system/uwsgi-app@$app.service.d/override.conf
+		mkdir /etc/systemd/system/uwsgi-app@$service.service.d && \
+		cp ../conf/uwsgi-app@override.service /etc/systemd/system/uwsgi-app@$service.service.d/override.conf
 
+	systemctl enable "uwsgi-app@$service.service" --quiet
 	systemctl daemon-reload
-	systemctl enable "uwsgi-app@$app.service"
 
 	# Add as a service
-	yunohost service add "uwsgi-app@$app" --log "/var/log/uwsgi/$app/$app.log"
+	yunohost service add "uwsgi-app@$service" --log "/var/log/uwsgi/$service/$service.log"
 }
 
 # Remove the dedicated uwsgi ini file
 #
-# usage: ynh_remove_uwsgi_service
+# usage: ynh_remove_uwsgi_service [--service=service]
+# | arg: -s, --service=     - Service name (optionnal, $app by default)
+#
 ynh_remove_uwsgi_service () {
-	local finaluwsgiini="/etc/uwsgi/apps-available/$app.ini"
-	if [ -e "$finaluwsgiini" ]; then
-		yunohost service remove "uwsgi-app@$app"
-		systemctl stop "uwsgi-app@$app.service"
-		systemctl disable "uwsgi-app@$app.service"
+    # Declare an array to define the options of this helper.
+    local legacy_args=s
+    local -A args_array=([s]=service=)
+    local service
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+    local service="${service:-$app}"
 
+	local finaluwsgiini="/etc/uwsgi/apps-available/$service.ini"
+	if [ -e "$finaluwsgiini" ]; then
+		yunohost service remove "uwsgi-app@$service"
+		systemctl stop "uwsgi-app@$service.service"
+		systemctl disable "uwsgi-app@$service.service" --quiet
 		ynh_secure_remove --file="$finaluwsgiini"
-		ynh_secure_remove --file="/var/log/uwsgi/$app"
-		ynh_secure_remove --file="/etc/systemd/system/uwsgi-app@$app.service.d"
+		ynh_secure_remove --file="/var/log/uwsgi/$service"
+		ynh_secure_remove --file="/etc/systemd/system/uwsgi-app@$service.service.d"
 	fi
 }
-
 
 # Restore the dedicated uwsgi config
 # Should be used in restore script
 #
-# usage: ynh_restore_uwsgi_service
+# usage: ynh_restore_uwsgi_service [--service=service]
+# | arg: -s, --service=     - Service name (optionnal, $app by default)
 ynh_restore_uwsgi_service () {
+    # Declare an array to define the options of this helper.
+    local legacy_args=s
+    local -A args_array=([s]=service=)
+    local service
+    # Manage arguments with getopts
+    ynh_handle_getopts_args "$@"
+    service="${service:-$app}"
+
     ynh_check_global_uwsgi_config
-    systemctl enable "uwsgi-app@$app" --quiet
-    yunohost service add "uwsgi-app@$app" --log "/var/log/uwsgi/$app/$app.log"
+    systemctl enable "uwsgi-app@$service" --quiet
+    yunohost service add "uwsgi-app@$service" --log "/var/log/uwsgi/$service/$service.log"
 }
