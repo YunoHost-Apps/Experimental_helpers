@@ -1,5 +1,0 @@
-#!/bin/bash
-
-ynh_version () {	# Returns the version number of the Yunohost moulinette
-	ynh_version=$(sudo yunohost -v | grep "moulinette:" | cut -d' ' -f2 | cut -d'.' -f1,2)
-}
