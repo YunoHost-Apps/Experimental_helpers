@@ -1,0 +1,230 @@
+#!/bin/bash
+
+#=================================================
+# DEMO HELPERS
+#=================================================
+
+# Start an LXC container in demo mode
+#
+# usage: ynh_lxc_demo_start --name=name --ip=ip
+# | arg: -n, --name=	- name of the LXC
+# | arg: -n, --ip=		- demo ip of the lxc
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_lxc_demo_start () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=ni
+	local -A args_array=([n]=name= [i]=ip=)
+	local name
+	local ip
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	ynh_lxc_stop --name="$name"
+	lxc config device set $name eth1 ipv4.address $ip
+	_ynh_lxc_start_and_wait --name="$name"
+}
+
+# Stop an LXC container in demo mode
+#
+# usage: ynh_lxc_demo_stop --name=name
+# | arg: -n, --name=	- name of the LXC
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_lxc_demo_stop () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=n
+	local -A args_array=([n]=name=)
+	local name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	ynh_lxc_stop --name="$name"
+	lxc config device unset $name eth1 ipv4.address
+}
+
+# Upgrading demo container
+#
+# usage: ynh_lxc_demo_upgrade --name=name --time_to_switch=time_to_switch
+# | arg: -n, --name=			- name of the LXC
+# | arg: -t, --time_to_switch=  - time to switch
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_lxc_demo_upgrade () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=nt
+	local -A args_array=([n]=name= [t]=time_to_switch=)
+	local name
+	local time_to_switch
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	ynh_print_info --message="Upgrading $name"
+	# Attend que la machine soit éteinte.
+	# Timeout à $time_to_switch +5 minutes, en seconde
+	TIME_OUT=$(($time_to_switch * 60 + 300))
+	wait_period=0
+	while ! ynh_lxc_is_stopped --name=$name
+	do
+		wait_period=$(($wait_period+10))
+		if [ $wait_period -gt $TIME_OUT ];then
+		   break
+		else
+		   sleep 5
+		fi
+	done
+
+	while test -e /var/lib/lxd/$name.lock_fileS; do
+		sleep 5 # Attend que le conteneur soit libéré par le script switch.
+	done
+
+	touch /var/lib/lxd/$name.lock_fileU # Met en place un fichier pour indiquer que la machine est indisponible pendant l'upgrade
+
+	# Supprime les éventuels swap présents.
+	/sbin/swapoff /var/lib/lxd/$name/rootfs/swap_*
+
+	# Restaure le snapshot
+	ynh_lxc_snapshot_load --name=$name --snapname=snap0
+
+	# Démarre le conteneur
+	date >> "$final_path/demo_boot.log"
+
+	# Update
+	update_apt=0
+	ynh_lxc_run_inside --name="$name" --command="apt-get update"
+	ynh_lxc_run_inside --name="$name" --command="apt-get dist-upgrade --dry-run | grep -q "^Inst " > /dev/null" # Vérifie si il y aura des mises à jour.
+	if [ "$?" -eq 0 ]; then
+			date
+			update_apt=1
+			# Upgrade
+			ynh_lxc_run_inside --name="$name" --command="apt-get dist-upgrade --option Dpkg::Options::=--force-confold -yy"
+			# Clean
+			ynh_lxc_run_inside --name="$name" --command="apt-get autoremove -y"
+			ynh_lxc_run_inside --name="$name" --command="apt-get autoclean"
+	fi
+	ynh_lxc_run_inside --name="$name" --command="yunohost tools update"
+	ynh_lxc_run_inside --name="$name" --command="yunohost tools upgrade system"
+
+	# Exécution des scripts de upgrade.d
+	LOOP=$((LOOP + 1))
+	while read LIGNE
+	do
+		if [ ! "$LIGNE" == "exemple" ] && [ ! "$LIGNE" == "old_scripts" ] && [ ! "$LIGNE" == "Constant_upgrade" ] && ! echo "$LIGNE" | grep -q ".fail$" # Le fichier exemple, le dossier old_scripts et les scripts fail sont ignorés
+		then
+			date
+			# Exécute chaque script trouvé dans upgrade.d
+			ynh_print_info --message="Exécution du script $LIGNE sur le conteneur $name"
+			/bin/bash "$final_path/upgrade.d/$LIGNE" $name
+			if [ "$?" -ne 0 ]; then # Si le script a échoué, le snapshot est annulé.
+				ynh_print_info --message="Échec du script $LIGNE"
+				mv -f "$final_path/upgrade.d/$LIGNE" "$final_path/upgrade.d/$LIGNE.fail"
+				ynh_print_info --message="Échec d'exécution du script d'upgrade $LIGNE sur le conteneur $name sur le serveur de demo $DOMAIN!\nLe script a été renommé en .fail, il ne sera plus exécuté tant que le préfixe ne sera pas retiré.\n\nExtrait du log:\n$(tail -n +$log_line "$script_dir/demo_upgrade.log")" | mail -a "Content-Type: text/plain; charset=UTF-8" -s "Demo Yunohost" $MAIL_ADDR
+				update_apt=0
+			else
+				ynh_print_info --message="Le script $LIGNE a été exécuté sans erreur"
+				update_apt=1
+			fi
+		fi
+	done <<< "$(ls -1 "$final_path/upgrade.d")"
+
+	# Exécution des scripts de upgrade.d/Constant_upgrade
+	while read LIGNE
+	do
+		if [ "$update_apt" -eq "1" ]
+		then
+			date
+			# Exécute chaque script trouvé dans upgrade.d/Constant_upgrade
+			ynh_print_info --message="Exécution du script $LIGNE sur le conteneur $name"
+			/bin/bash "$final_path/upgrade.d/Constant_upgrade/$LIGNE" $name
+			if [ "$?" -ne 0 ]; then
+				ynh_print_info --message="Échec du script $LIGNE"
+				ynh_print_info --message="Échec d'exécution du script d'upgrade $LIGNE sur le conteneur $name sur le serveur de demo $DOMAIN!\n"
+			else
+				ynh_print_info --message="Le script $LIGNE a été exécuté sans erreur"
+			fi
+		fi
+	done <<< "$(ls -1 "$final_path/upgrade.d/Constant_upgrade")"
+
+	# Upgrade des apps
+	ynh_lxc_run_inside --name="$name" --command="yunohost tools update"
+	ynh_lxc_run_inside --name="$name" --command="systemctl restart nginx"
+	ynh_lxc_run_inside --name="$name" --command="yunohost tools upgrade apps"
+	ynh_lxc_run_inside --name="$name" --command="systemctl restart nginx"
+
+	# Arrêt de la machine virtualisée
+	ynh_lxc_stop --name=$name
+
+	if [ "$update_apt" -eq "1" ]
+	then
+		# Archivage du snapshot
+		ynh_exec_warn_less tar -cz --acls --xattrs -f /var/lib/lxd/snapshots/$name/snap0.tar.gz /var/lib/lxd/snapshots/$name/snap0
+		# Remplacement du snapshot
+		ynh_lxc_snapshot_create --name=$name --snapname=snap0
+
+		if [ "$LOOP" -eq 2 ]
+		then	# Après l'upgrade du 2e conteneur, déplace les scripts dans le dossier des anciens scripts si ils ont été exécutés avec succès.
+			ls -1 "$final_path/upgrade.d" | while read LIGNE
+			do
+				if [ ! "$LIGNE" == "exemple" ] && [ ! "$LIGNE" == "old_scripts" ] && [ ! "$LIGNE" == "Constant_upgrade" ] && ! echo "$LIGNE" | grep -q ".fail$" # Le fichier exemple, le dossier old_scripts et les scripts fail sont ignorés
+				then
+					mv -f "$final_path/upgrade.d/$LIGNE" "$final_path/upgrade.d/old_scripts/$LIGNE"
+				fi
+			done
+		fi
+	fi
+	ynh_secure_remove --file="/var/lib/lxd/$name.lock_fileU"	# Libère le lock, la machine est à nouveau disponible
+	ynh_print_info --message="Finished upgrading $name"
+}
+
+# Restore an LXC container from snap0 snapshot
+#
+# usage: ynh_lxc_demo_restore_from_snapshot --name=name
+# | arg: -n, --name=	- name of the LXC
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_lxc_demo_restore_from_snapshot () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=n
+	local -A args_array=([n]=name=)
+	local name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	ynh_print_info --message="Restoring LXC container $name from snapshot"
+	ynh_lxc_snapshot_load --name=$name --snapname=snap0
+	if ynh_lxc_check_container_start --name=$name
+	then
+		ynh_print_info --message="LXC container $name is working."
+		return 0
+	else
+		ynh_print_info --message="LXC container $name is broken."
+		return 1
+	fi
+}
+
+# Restore an LXC container from an archive
+#
+# usage: ynh_lxc_demo_restore_from_archive --name=name
+# | arg: -n, --name=	- name of the LXC
+#
+# Requires YunoHost version *.*.* or higher.
+ynh_lxc_demo_restore_from_archive () {
+	# Declare an array to define the options of this helper.
+	local legacy_args=n
+	local -A args_array=([n]=name=)
+	local name
+	# Manage arguments with getopts
+	ynh_handle_getopts_args "$@"
+
+	if ! test -e "/var/lib/lxd/snapshots/$name/snap1.tar.gz"; then
+		ynh_print_info --message="No snapshot archive for LXC container $name"
+		return 1
+	fi
+	ynh_print_info --message="Restoring snapshot archive for LXC container $name"
+	ynh_print_info --message="Deleting snapshot"
+	ynh_lxc_snapshot_delete --name=$name --snapname=snap0
+	ynh_print_info --message="Untar archive"
+	tar -x --acls --xattrs -f /var/lib/lxd/snapshots/$name/snap0.tar.gz -C /
+	ynh_lxc_demo_restore_from_snapshot --name=$name
+	return $?
+}
